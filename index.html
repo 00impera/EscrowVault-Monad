@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Dragon Escrow Vault - Monad Dashboard</title>
+  <title>Hacker Escrow Vault - Monad Dashboard</title>
   <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/web3/1.10.0/web3.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@web3auth/modal@8.0.0/dist/modal.umd.min.js"></script>
@@ -12,187 +12,93 @@
       --green: #00ff00;
       --gold: #ffff00;
       --red: #ff4444;
-      --bg: #0D0D0D;
-      --panel: #18181b;
-      --carbon: #18181b;
-      --neon-purple: #6A00F4;
-      --neon-blue: #0AB3FF;
-      --neon-gradient: linear-gradient(90deg, #6A00F4 0%, #0AB3FF 100%);
-      --muted-gradient: linear-gradient(90deg, #23232b 0%, #18181b 100%);
-      --btn-glow: 0 0 16px #6A00F4, 0 0 32px #0AB3FF;
-      --btn-glow-hover: 0 0 32px #6A00F4, 0 0 64px #0AB3FF;
+      --bg: #000000;
+      --panel: #0AB3FF;
     }
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
       font-family: 'Share Tech Mono', monospace;
-      background: var(--bg);
+      background: #000000;
       min-height: 100vh;
       color: var(--gold);
       padding: 20px;
       position: relative;
-      background-image: repeating-linear-gradient(135deg, #18181b 0 2px, transparent 2px 40px);
     }
     body::before {
       content: '';
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
       background: 
-        radial-gradient(circle at 20% 50%, rgba(106,0,244,0.12) 0%, transparent 50%),
-        radial-gradient(circle at 80% 80%, rgba(10,179,255,0.10) 0%, transparent 50%);
+        radial-gradient(circle at 20% 50%, rgba(0,255,0,0.15) 0%, transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(255,255,0,0.12) 0%, transparent 50%);
       pointer-events: none;
       animation: shift 20s ease-in-out infinite;
       z-index: 0;
     }
     @keyframes shift { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
     @keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.85; transform: scale(1.02); } }
-    @keyframes glow { 0%, 100% { box-shadow: 0 0 30px #6A00F4; } 50% { box-shadow: 0 0 50px #0AB3FF; } }
+    @keyframes glow { 0%, 100% { box-shadow: 0 0 30px rgba(0,255,0,0.6); } 50% { box-shadow: 0 0 50px rgba(0,255,0,0.9); } }
     .container { max-width: 1400px; margin: 0 auto; position: relative; z-index: 1; }
-    h1 {
-      background: var(--neon-gradient);
+    h1 { 
+      background: linear-gradient(135deg, #00bfff, #0D0D0D);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
-      text-align: center;
-      margin-bottom: 30px;
-      font-size: 2.5em;
-      filter: drop-shadow(0 0 20px #6A00F4);
-      animation: pulse 3s ease-in-out infinite;
-      letter-spacing: 0.05em;
+      text-align: center; 
+      margin-bottom: 30px; 
+      font-size: 2.5em; 
+      filter: drop-shadow(0 0 20px rgba(0, 191, 255, 0.6));
+      animation: pulse 3s ease-in-out infinite; 
     }
     .lcd {
-      background: var(--carbon);
-      border: 2px solid #23232b;
+      background: var(--panel);
+      border: 6px solid var(--green);
+      border-left: 0; border-right: 0;
       border-radius: 20px;
       padding: 30px;
       margin-bottom: 25px;
-      box-shadow: 0 0 32px 0 #0AB3FF33;
       animation: glow 3s ease-in-out infinite;
     }
-    .logo { display: block; margin: 0 auto 15px; width: 100px; height: 100px; border-radius: 20px; border: 3px solid var(--neon-blue); animation: pulse 4s ease-in-out infinite; }
-    .title { font-size: 1.8em; font-weight: 900; color: var(--neon-blue); text-align: center; margin-bottom: 20px; text-shadow: 0 0 20px var(--neon-blue); }
-    .row {
-      display: flex; justify-content: space-between; align-items: center;
-      padding: 12px 15px; margin: 8px 0;
-      background: var(--muted-gradient);
-      border-radius: 8px;
-      border-left: 4px solid var(--neon-purple);
-    }
-    .label { color: var(--neon-purple); font-weight: 700; font-size: 1em; }
+    .logo { display: block; margin: 0 auto 15px; width: 100px; height: 100px; border-radius: 20px; border: 3px solid var(--gold); animation: pulse 4s ease-in-out infinite; }
+    .title { font-size: 1.8em; font-weight: 900; color: var(--green); text-align: center; margin-bottom: 20px; text-shadow: 0 0 20px var(--green); }
+    .row { display: flex; justify-content: space-between; align-items: center; padding: 12px 15px; margin: 8px 0; background: rgba(0, 255, 0, 0.05); border-radius: 8px; border-left: 4px solid var(--green); }
+    .label { color: var(--green); font-weight: 700; font-size: 1em; }
     .value { color: var(--gold); font-weight: bold; text-shadow: 0 0 15px var(--gold); }
-    .loading { animation: pulse 1.5s ease-in-out infinite; color: var(--neon-blue); }
+    .loading { animation: pulse 1.5s ease-in-out infinite; color: var(--green); }
     .status-active { color: var(--green); font-weight: bold; animation: pulse 2s ease-in-out infinite; }
     .status-paused { color: var(--red); font-weight: bold; animation: pulse 2s ease-in-out infinite; }
     .fees { color: var(--gold); background: rgba(255, 255, 0, 0.1); padding: 6px 14px; border-radius: 6px; border: 2px solid var(--gold); font-weight: 900; }
-    .wallet {
-      background: var(--carbon);
-      border: 3px solid var(--neon-purple);
-      border-radius: 16px;
-      padding: 25px;
-      margin-bottom: 25px;
-      box-shadow: 0 0 24px #6A00F433;
-    }
+    .wallet { background: var(--panel); border: 3px solid var(--green); border-radius: 16px; padding: 25px; margin-bottom: 25px; }
     .wallet-status { text-align: center; margin-bottom: 20px; font-size: 1.3em; font-weight: bold; }
     .indicator { display: inline-block; width: 14px; height: 14px; border-radius: 50%; margin-right: 10px; animation: pulse 2s ease-in-out infinite; }
-    .indicator.on { background: var(--neon-blue); box-shadow: 0 0 20px var(--neon-blue); }
+    .indicator.on { background: var(--green); box-shadow: 0 0 20px var(--green); }
     .indicator.off { background: var(--red); box-shadow: 0 0 20px var(--red); }
     .wallet-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
-    .wallet-btn {
-      background: var(--bg);
-      color: var(--neon-blue);
-      border: 3px solid var(--neon-purple);
-      border-radius: 12px;
-      padding: 25px 15px;
-      font-size: 1.1em;
-      font-weight: 700;
-      cursor: pointer;
-      font-family: inherit;
-      transition: all 0.3s;
-      display: flex; flex-direction: column; align-items: center; gap: 10px;
-      box-shadow: var(--btn-glow);
-      text-shadow: 0 0 8px #0AB3FF;
-    }
-    .wallet-btn:hover:not(:disabled) {
-      background: var(--neon-gradient);
-      color: #fff;
-      transform: translateY(-3px) scale(1.03);
-      box-shadow: var(--btn-glow-hover);
-      border-color: var(--neon-blue);
-    }
+    .wallet-btn { background: var(--bg); color: var(--green); border: 3px solid var(--green); border-radius: 12px; padding: 25px 15px; font-size: 1.1em; font-weight: 700; cursor: pointer; font-family: inherit; transition: all 0.3s; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+    .wallet-btn:hover:not(:disabled) { background: var(--green); color: var(--bg); transform: translateY(-3px); box-shadow: 0 8px 25px rgba(0,255,0,0.5); }
     .wallet-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-    .wallet-btn.connected {
-      background: var(--neon-gradient);
-      color: #fff;
-      border-color: var(--neon-blue);
-      box-shadow: var(--btn-glow-hover);
-    }
-    .wallet-info { background: var(--muted-gradient); border: 2px solid var(--neon-purple); border-radius: 12px; padding: 15px; display: none; }
+    .wallet-btn.connected { background: var(--green); color: var(--bg); border-color: var(--green); }
+    .wallet-info { background: rgba(0, 255, 0, 0.05); border: 2px solid var(--green); border-radius: 12px; padding: 15px; display: none; }
     .wallet-info.show { display: block; }
     .info-row { display: flex; justify-content: space-between; padding: 10px; margin: 5px 0; background: rgba(0, 0, 0, 0.6); border-radius: 6px; }
-    .info-label { color: var(--neon-purple); font-weight: 600; }
+    .info-label { color: var(--green); font-weight: 600; }
     .info-value { color: var(--gold); font-weight: bold; word-break: break-all; }
-    .admin-badge {
-      background: var(--neon-gradient);
-      color: #fff;
-      padding: 10px 15px;
-      border-radius: 8px;
-      text-align: center;
-      margin-top: 15px;
-      font-weight: 900;
-      animation: pulse 2s ease-in-out infinite;
-      font-size: 1.1em;
-      text-shadow: 0 0 8px #6A00F4;
-    }
-    .btn {
-      background: var(--neon-gradient);
-      color: #fff;
-      border: none;
-      border-radius: 10px;
-      padding: 14px 30px;
-      font-size: 1.1em;
-      font-weight: 900;
-      cursor: pointer;
-      font-family: inherit;
-      width: 100%;
-      transition: all 0.3s;
-      margin-top: 10px;
-      box-shadow: var(--btn-glow);
-      text-shadow: 0 0 8px #0AB3FF;
-    }
-    .btn:hover:not(:disabled) {
-      transform: translateY(-3px) scale(1.03);
-      box-shadow: var(--btn-glow-hover);
-      background: var(--neon-gradient);
-      color: #fff;
-    }
+    .admin-badge { background: linear-gradient(135deg, var(--gold), #6A00F4); color: var(--bg); padding: 10px 15px; border-radius: 8px; text-align: center; margin-top: 15px; font-weight: 900; animation: pulse 2s ease-in-out infinite; font-size: 1.1em; }
+    .btn { background: var(--green); color: var(--bg); border: none; border-radius: 10px; padding: 14px 30px; font-size: 1.1em; font-weight: 900; cursor: pointer; font-family: inherit; width: 100%; transition: all 0.3s; margin-top: 10px; }
+    .btn:hover:not(:disabled) { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(0,255,0,0.6); background: var(--gold); color: var(--bg); }
     .btn:disabled { opacity: 0.5; cursor: not-allowed; }
-    .btn-disconnect {
-      background: linear-gradient(90deg, #ff4444 0%, #6A00F4 100%);
-      border: 2px solid #ff4444;
-      color: #fff;
-      box-shadow: 0 0 16px #ff4444, 0 0 32px #6A00F4;
-    }
-    .btn-disconnect:hover:not(:disabled) {
-      background: linear-gradient(90deg, #dc2626 0%, #6A00F4 100%);
-      box-shadow: 0 0 32px #ff4444, 0 0 64px #6A00F4;
-    }
+    .btn-disconnect { background: var(--red); border: 2px solid var(--red); color: #fff; }
+    .btn-disconnect:hover:not(:disabled) { background: #0AB3FF; box-shadow: 0 8px 25px rgba(255,68,68,0.6); }
     .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 25px; }
-    .stat {
-      background: var(--carbon);
-      border: 3px solid var(--neon-blue);
-      border-radius: 12px;
-      padding: 20px;
-      text-align: center;
-      transition: all 0.3s;
-      box-shadow: 0 0 16px #0AB3FF33;
-    }
-    .stat:hover { transform: translateY(-3px) scale(1.03); box-shadow: 0 5px 25px #6A00F4; }
-    .stat-label { color: var(--neon-purple); font-size: 0.9em; margin-bottom: 10px; font-weight: 600; }
+    .stat { background: var(--panel); border: 3px solid var(--green); border-radius: 12px; padding: 20px; text-align: center; transition: all 0.3s; }
+    .stat:hover { transform: translateY(-3px); box-shadow: 0 5px 25px rgba(0,255,0,0.4); }
+    .stat-label { color: var(--green); font-size: 0.9em; margin-bottom: 10px; font-weight: 600; }
     .stat-value { color: var(--gold); font-size: 1.4em; font-weight: bold; text-shadow: 0 0 15px var(--gold); word-break: break-all; }
     .msg { padding: 15px 20px; border-radius: 10px; margin: 15px 0; text-align: center; font-weight: bold; font-size: 1em; }
-    .msg-success { background: var(--neon-blue); color: #fff; }
-    .msg-error { background: var(--neon-purple); color: #fff; border: 2px solid #ff4444; }
-    .msg-info { background: rgba(106,0,244,0.15); color: var(--neon-purple); border: 2px solid var(--neon-purple); }
-    .auto-refresh { text-align: center; color: var(--neon-blue); margin-top: 15px; font-size: 0.9em; font-weight: 600; }
+    .msg-success { background: var(--green); color: var(--bg); }
+    .msg-error { background: var(--red); color: #fff; }
+    .msg-info { background: rgba(255, 255, 0, 0.15); color: var(--gold); border: 2px solid var(--gold); }
+    .auto-refresh { text-align: center; color: var(--green); margin-top: 15px; font-size: 0.9em; font-weight: 600; }
     @media (max-width: 768px) {
       h1 { font-size: 2em; }
       .wallet-btns { grid-template-columns: 1fr; }
@@ -204,6 +110,7 @@
 <body>
   <div class="container">
     <h1>🐉 DRAGON ESCROW VAULT</h1>
+    
     <div class="wallet">
       <div class="wallet-status">
         <span class="indicator off" id="indicator"></span>
@@ -236,6 +143,7 @@
         <button class="btn btn-disconnect" id="disconnectBtn">DISCONNECT</button>
       </div>
     </div>
+    
     <div class="lcd">
       <img src="https://brown-left-viper-691.mypinata.cloud/ipfs/bafybeiarjogrmlafa7t4tzyukv633iy4lf7nxtyqm6jzg2zpkweldfsiru" class="logo" alt="Dragon Logo" />
       <div class="title">LIVE LCD DASHBOARD</div>
@@ -266,6 +174,7 @@
       <button class="btn" id="refreshBtn">🔄 REFRESH DASHBOARD</button>
       <div class="auto-refresh">⚡ Auto-refresh every 15 seconds</div>
     </div>
+    
     <div class="stats">
       <div class="stat">
         <div class="stat-label">🌐 Network</div>
@@ -292,8 +201,10 @@
         <div class="stat-value" id="lastUpdate">Just now</div>
       </div>
     </div>
+    
     <div id="msg"></div>
   </div>
+
   <script>
     const CONFIG = {
       addr: "0x49d88eB97341108d9C6868d65a6512a4af3d183b",
@@ -306,31 +217,430 @@
         network: "sapphire_mainnet"
       }
     };
-    const ABI = [/* ... your ABI ... */];
+
+    const ABI = [{"inputs":[],"stateMutability":"nonpayable","type":"constructor"},{"inputs":[],"name":"FeePercentTooHigh","type":"error"},{"inputs":[],"name":"InvalidAddress","type":"error"},{"inputs":[],"name":"InvalidAmount","type":"error"},{"inputs":[],"name":"InvalidEscrowId","type":"error"},{"inputs":[],"name":"InvalidState","type":"error"},{"inputs":[],"name":"TransferFailed","type":"error"},{"inputs":[],"name":"UnauthorizedAccess","type":"error"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"address","name":"previousAdmin","type":"address"},{"indexed":false,"internalType":"address","name":"newAdmin","type":"address"}],"name":"AdminChanged","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"beacon","type":"address"}],"name":"BeaconUpgraded","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"escrowId","type":"uint256"}],"name":"DeliveryConfirmed","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"escrowId","type":"uint256"}],"name":"DisputeRaised","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"escrowId","type":"uint256"},{"indexed":true,"internalType":"address","name":"winner","type":"address"}],"name":"DisputeResolved","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"escrowId","type":"uint256"},{"indexed":true,"internalType":"address","name":"buyer","type":"address"},{"indexed":true,"internalType":"address","name":"seller","type":"address"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"}],"name":"EscrowCreated","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"escrowId","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"feeAmount","type":"uint256"}],"name":"FeeCollected","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"address","name":"oldCollector","type":"address"},{"indexed":false,"internalType":"address","name":"newCollector","type":"address"}],"name":"FeeCollectorUpdated","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"uint256","name":"oldPercent","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"newPercent","type":"uint256"}],"name":"FeePercentUpdated","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"escrowId","type":"uint256"},{"indexed":true,"internalType":"address","name":"recipient","type":"address"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"}],"name":"FundsReleased","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"uint8","name":"version","type":"uint8"}],"name":"Initialized","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"previousOwner","type":"address"},{"indexed":true,"internalType":"address","name":"newOwner","type":"address"}],"name":"OwnershipTransferred","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"address","name":"account","type":"address"}],"name":"Paused","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"escrowId","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"}],"name":"PaymentDeposited","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"escrowId","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"}],"name":"Refunded","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"address","name":"account","type":"address"}],"name":"Unpaused","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"implementation","type":"address"}],"name":"Upgraded","type":"event"},{"inputs":[{"internalType":"uint256","name":"_escrowId","type":"uint256"}],"name":"approveRefund","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"_amount","type":"uint256"}],"name":"calculateFee","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"_escrowId","type":"uint256"}],"name":"confirmDelivery","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address payable","name":"_seller","type":"address"},{"internalType":"address","name":"_arbiter","type":"address"},{"internalType":"string","name":"_description","type":"string"}],"name":"createEscrow","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"payable","type":"function"},{"inputs":[],"name":"emergencyWithdraw","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"escrowCount","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"","type":"uint256"}],"name":"escrows","outputs":[{"internalType":"address payable","name":"buyer","type":"address"},{"internalType":"address payable","name":"seller","type":"address"},{"internalType":"address","name":"arbiter","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"},{"internalType":"enum DragonEscrowVault.State","name":"state","type":"uint8"},{"internalType":"uint256","name":"createdAt","type":"uint256"},{"internalType":"string","name":"description","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"feeCollector","outputs":[{"internalType":"address payable","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"feePercent","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"_escrowId","type":"uint256"}],"name":"getEscrow","outputs":[{"internalType":"address","name":"buyer","type":"address"},{"internalType":"address","name":"seller","type":"address"},{"internalType":"address","name":"arbiter","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"},{"internalType":"enum DragonEscrowVault.State","name":"state","type":"uint8"},{"internalType":"uint256","name":"createdAt","type":"uint256"},{"internalType":"string","name":"description","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"_user","type":"address"}],"name":"getUserEscrows","outputs":[{"internalType":"uint256[]","name":"","type":"uint256[]"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address payable","name":"_feeCollector","type":"address"},{"internalType":"uint256","name":"_feePercent","type":"uint256"}],"name":"initialize","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"owner","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"pause","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"paused","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"proxiableUUID","outputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"renounceOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"_escrowId","type":"uint256"}],"name":"requestRefund","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"_escrowId","type":"uint256"},{"internalType":"bool","name":"_releaseToBuyer","type":"bool"}],"name":"resolveDispute","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"totalFeesCollected","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"newOwner","type":"address"}],"name":"transferOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"unpause","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address payable","name":"_newCollector","type":"address"}],"name":"updateFeeCollector","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"_newFeePercent","type":"uint256"}],"name":"updateFeePercent","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"newImplementation","type":"address"}],"name":"upgradeTo","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"newImplementation","type":"address"},{"internalType":"bytes","name":"data","type":"bytes"}],"name":"upgradeToAndCall","outputs":[],"stateMutability":"payable","type":"function"},{"stateMutability":"payable","type":"receive"}];
+
     let w3 = new Web3(CONFIG.rpc);
     let c = new w3.eth.Contract(ABI, CONFIG.addr);
     let userAddr = null;
     let web3auth = null;
+
     function msg(text, type = 'info') {
       const msgDiv = document.getElementById('msg');
       msgDiv.innerHTML = `<div class="msg msg-${type}">${text}</div>`;
       if (type !== 'info') setTimeout(() => msgDiv.innerHTML = '', 5000);
     }
-    // ... rest of your JS unchanged ...
+
+    function formatAddress(addr) {
+      return addr ? `${addr.slice(0, 6)}...${addr.slice(-4)}` : '-';
+    }
+
+    function setLoading(id, val) {
+      const el = document.getElementById(id);
+      if (el) {
+        el.textContent = val;
+        el.classList.remove('loading');
+      }
+    }
+
+    async function updateNetworkStats() {
+      try {
+        // Get Chain ID
+        const chainResponse = await fetch('https://rpc.monad.xyz', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            jsonrpc: '2.0',
+            id: 1,
+            method: 'eth_chainId',
+            params: []
+          })
+        });
+        const chainData = await chainResponse.json();
+        if (chainData.result) {
+          const chainId = parseInt(chainData.result, 16);
+          setLoading('chainId', chainId);
+          setLoading('networkName', chainId === 143 ? 'Monad Mainnet' : `Chain ${chainId}`);
+        }
+
+        // Get Gas Price
+        const gasResponse = await fetch('https://rpc.monad.xyz', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            jsonrpc: '2.0',
+            id: 2,
+            method: 'eth_gasPrice',
+            params: []
+          })
+        });
+        const gasData = await gasResponse.json();
+        if (gasData.result) {
+          const gasPrice = parseInt(gasData.result, 16);
+          const gasPriceGwei = (gasPrice / 1e9).toFixed(2);
+          setLoading('gasPrice', gasPriceGwei + ' Gwei');
+        }
+
+        // RPC Status
+        setLoading('rpcStatus', '🟢 Online');
+        document.getElementById('rpcStatus').style.color = '#00ff00';
+        
+      } catch (err) {
+        console.error('Network Stats Error:', err);
+        setLoading('rpcStatus', '🔴 Offline');
+        document.getElementById('rpcStatus').style.color = '#ff4444';
+        setLoading('gasPrice', 'N/A');
+      }
+    }
+
+    async function callContractMethod(method, params = []) {
+      const response = await fetch('https://rpc.monad.xyz', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          jsonrpc: '2.0',
+          id: 1,
+          method: 'eth_call',
+          params: [{
+            to: CONFIG.addr,
+            data: w3.eth.abi.encodeFunctionCall(
+              ABI.find(x => x.name === method),
+              params
+            )
+          }, 'latest']
+        })
+      });
+      const data = await response.json();
+      return data.result;
+    }
+
+    async function updateLCD() {
+      try {
+        setLoading('fee', '⏳');
+        setLoading('total', '⏳');
+        setLoading('collector', '⏳');
+        setLoading('status', '⏳');
+        setLoading('owner', '⏳');
+        setLoading('count', '⏳');
+        setLoading('block', '⏳');
+
+        // Get block number via RPC
+        const blockResponse = await fetch('https://rpc.monad.xyz', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            jsonrpc: '2.0',
+            id: 1,
+            method: 'eth_blockNumber',
+            params: []
+          })
+        });
+        const blockData = await blockResponse.json();
+        const blockNum = parseInt(blockData.result, 16);
+        setLoading('block', blockNum.toLocaleString());
+
+        // Platform Fee
+        const feeResult = await callContractMethod('feePercent');
+        const feePercent = parseInt(feeResult, 16);
+        setLoading('fee', (feePercent / 100).toFixed(2) + '%');
+
+        // Total Fees Collected
+        const totalFeesResult = await callContractMethod('totalFeesCollected');
+        const totalFees = w3.utils.toBN(totalFeesResult);
+        setLoading('total', parseFloat(w3.utils.fromWei(totalFees, 'ether')).toFixed(4) + ' MON');
+
+        // Fee Collector
+        const collectorResult = await callContractMethod('feeCollector');
+        const feeCollector = '0x' + collectorResult.slice(-40);
+        setLoading('collector', formatAddress(feeCollector));
+
+        // Paused Status
+        const pausedResult = await callContractMethod('paused');
+        const paused = pausedResult !== '0x0000000000000000000000000000000000000000000000000000000000000000';
+        setLoading('status', paused ? '⛔ PAUSED' : '✅ ACTIVE');
+        document.getElementById('status').className = paused ? 'value status-paused' : 'value status-active';
+
+        // Owner
+        const ownerResult = await callContractMethod('owner');
+        const owner = '0x' + ownerResult.slice(-40);
+        setLoading('owner', formatAddress(owner));
+
+        // Escrow Count
+        const countResult = await callContractMethod('escrowCount');
+        const escrowCount = parseInt(countResult, 16);
+        setLoading('count', escrowCount.toLocaleString());
+
+        // Update network stats
+        await updateNetworkStats();
+
+        // Update timestamp
+        const now = new Date();
+        const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        setLoading('lastUpdate', timeStr);
+
+      } catch (err) {
+        console.error('LCD Update Error:', err);
+        msg('⚠️ Failed to load real-time data: ' + err.message, 'error');
+        
+        // Fallback to Web3 if RPC fails
+        try {
+          const [feePercent, feeCollector, paused, owner, escrowCount, totalFees, blockNum] = await Promise.all([
+            c.methods.feePercent().call(),
+            c.methods.feeCollector().call(),
+            c.methods.paused().call(),
+            c.methods.owner().call(),
+            c.methods.escrowCount().call(),
+            c.methods.totalFeesCollected().call(),
+            w3.eth.getBlockNumber()
+          ]);
+
+          setLoading('fee', (feePercent / 100).toFixed(2) + '%');
+          setLoading('total', parseFloat(w3.utils.fromWei(totalFees, 'ether')).toFixed(4) + ' MON');
+          setLoading('collector', formatAddress(feeCollector));
+          setLoading('status', paused ? '⛔ PAUSED' : '✅ ACTIVE');
+          document.getElementById('status').className = paused ? 'value status-paused' : 'value status-active';
+          setLoading('owner', formatAddress(owner));
+          setLoading('count', escrowCount.toLocaleString());
+          setLoading('block', blockNum.toLocaleString());
+        } catch (fallbackErr) {
+          console.error('Fallback Error:', fallbackErr);
+        }
+      }
+    }
+
+    function updateWalletStatus(connected, method = '') {
+      const ind = document.getElementById('indicator');
+      const txt = document.getElementById('statusText');
+      const info = document.getElementById('walletInfo');
+      
+      if (connected) {
+        ind.className = 'indicator on';
+        txt.textContent = `CONNECTED VIA ${method.toUpperCase()}`;
+        txt.style.color = '#00ff00';
+        info.classList.add('show');
+      } else {
+        ind.className = 'indicator off';
+        txt.textContent = 'NOT CONNECTED';
+        txt.style.color = '#ff4444';
+        info.classList.remove('show');
+      }
+    }
+
+    async function switchToMonad() {
+      try {
+        await window.ethereum.request({
+          method: 'wallet_switchEthereumChain',
+          params: [{ chainId: CONFIG.chainId }],
+        });
+      } catch (e) {
+        if (e.code === 4902) {
+          await window.ethereum.request({
+            method: 'wallet_addEthereumChain',
+            params: [{
+              chainId: CONFIG.chainId,
+              chainName: 'Monad Mainnet',
+              nativeCurrency: { name: 'Monad', symbol: 'MON', decimals: 18 },
+              rpcUrls: [CONFIG.rpc],
+              blockExplorerUrls: ['https://monadvision.com']
+            }]
+          });
+        } else throw e;
+      }
+    }
+
+    async function connectMetaMask() {
+      try {
+        console.log('🔍 Starting MetaMask connection...');
+        
+        if (!window.ethereum) {
+          console.log('❌ MetaMask not detected');
+          msg('❌ Please install MetaMask browser extension!', 'error');
+          setTimeout(() => {
+            window.open('https://metamask.io/download/', '_blank');
+          }, 1000);
+          return;
+        }
+
+        console.log('✅ MetaMask detected');
+        msg('🦊 Connecting to MetaMask...', 'info');
+        
+        // Request accounts
+        console.log('📝 Requesting accounts...');
+        const accounts = await window.ethereum.request({ 
+          method: 'eth_requestAccounts' 
+        });
+        
+        if (!accounts || accounts.length === 0) {
+          throw new Error('No accounts found. Please unlock MetaMask.');
+        }
+        
+        userAddr = accounts[0];
+        console.log('✅ Account connected:', userAddr);
+        
+        // Switch to Monad network
+        console.log('🔄 Switching to Monad network...');
+        msg('🔄 Switching to Monad network...', 'info');
+        await switchToMonad();
+        console.log('✅ Network switched');
+        
+        // Initialize Web3 with MetaMask provider
+        console.log('⚙️ Initializing Web3...');
+        w3 = new Web3(window.ethereum);
+        c = new w3.eth.Contract(ABI, CONFIG.addr);
+        console.log('✅ Web3 initialized');
+        
+        // Get user balance
+        console.log('💰 Getting balance...');
+        const bal = await w3.eth.getBalance(userAddr);
+        const cid = await w3.eth.getChainId();
+        console.log('✅ Balance:', bal, 'Chain ID:', cid);
+        
+        // Update UI
+        document.getElementById('userAddr').textContent = formatAddress(userAddr);
+        document.getElementById('userNet').textContent = cid == CONFIG.chainIdDec ? '✅ Monad Mainnet' : `⚠️ Chain ${cid}`;
+        document.getElementById('userBal').textContent = `${parseFloat(w3.utils.fromWei(bal, 'ether')).toFixed(4)} MON`;
+        
+        // Check admin status
+        console.log('👑 Checking admin status...');
+        try {
+          const owner = await c.methods.owner().call();
+          console.log('✅ Contract owner:', owner);
+          if (owner.toLowerCase() === userAddr.toLowerCase()) {
+            document.getElementById('adminBadge').innerHTML = '<div class="admin-badge">⚡ ADMIN ACCESS ⚡</div>';
+            console.log('🎉 User is admin!');
+          }
+        } catch (ownerErr) {
+          console.warn('⚠️ Could not check admin status:', ownerErr.message);
+        }
+        
+        // Update wallet status
+        updateWalletStatus(true, 'MetaMask');
+        document.getElementById('metamaskBtn').classList.add('connected');
+        document.getElementById('metamaskBtn').innerHTML = '<span style="font-size: 2.5em;">✅</span><span>Connected</span>';
+        
+        msg('🎉 MetaMask connected successfully!', 'success');
+        console.log('🎉 Connection complete!');
+        
+        // Event listeners for account/network changes
+        window.ethereum.on('accountsChanged', (accounts) => {
+          console.log('🔄 Account changed:', accounts);
+          if (accounts.length === 0) {
+            console.log('👋 No accounts, disconnecting...');
+            disconnect();
+          } else {
+            console.log('🔄 Reloading page...');
+            location.reload();
+          }
+        });
+        
+        window.ethereum.on('chainChanged', (chainId) => {
+          console.log('🔄 Chain changed:', chainId);
+          location.reload();
+        });
+        
+      } catch (e) {
+        console.error('❌ MetaMask Connection Error:', e);
+        console.error('Error details:', {
+          message: e.message,
+          code: e.code,
+          data: e.data
+        });
+        
+        let errorMsg = 'Connection failed: ';
+        if (e.code === 4001) {
+          errorMsg += 'User rejected the request';
+        } else if (e.code === -32002) {
+          errorMsg += 'Request already pending. Please check MetaMask';
+        } else {
+          errorMsg += e.message || 'Unknown error';
+        }
+        
+        msg('❌ ' + errorMsg, 'error');
+      }
+    }
+
     async function connectWeb3Auth() {
       try {
         msg('🔐 Initializing Web3Auth...', 'info');
+        
         if (!window.Web3auth) {
-          msg('❌ <span style="color:#6A00F4">Web3Auth SDK not loaded!</span>', 'error');
+          msg('❌ Web3Auth SDK not loaded!', 'error');
           return;
         }
-        // ... rest of your connectWeb3Auth code ...
+
+        web3auth = new window.Web3auth.Web3Auth({
+          clientId: CONFIG.web3auth.clientId,
+          web3AuthNetwork: CONFIG.web3auth.network,
+          chainConfig: {
+            chainNamespace: "eip155",
+            chainId: CONFIG.chainId,
+            rpcTarget: CONFIG.rpc,
+            displayName: "Monad Mainnet",
+            blockExplorer: "https://monadvision.com",
+            ticker: "MON",
+            tickerName: "Monad"
+          }
+        });
+
+        await web3auth.initModal();
+        const web3authProvider = await web3auth.connect();
+        
+        w3 = new Web3(web3authProvider);
+        c = new w3.eth.Contract(ABI, CONFIG.addr);
+        
+        const accounts = await w3.eth.getAccounts();
+        userAddr = accounts[0];
+        
+        const bal = await w3.eth.getBalance(userAddr);
+        const cid = await w3.eth.getChainId();
+        
+        document.getElementById('userAddr').textContent = formatAddress(userAddr);
+        document.getElementById('userNet').textContent = cid == CONFIG.chainIdDec ? '✅ Monad' : `⚠️ Chain ${cid}`;
+        document.getElementById('userBal').textContent = `${parseFloat(w3.utils.fromWei(bal, 'ether')).toFixed(4)} MON`;
+        
+        const owner = await c.methods.owner().call();
+        if (owner.toLowerCase() === userAddr.toLowerCase()) {
+          document.getElementById('adminBadge').innerHTML = '<div class="admin-badge">⚡ ADMIN ACCESS ⚡</div>';
+        }
+        
+        updateWalletStatus(true, 'Web3Auth');
+        document.getElementById('web3authBtn').classList.add('connected');
+        document.getElementById('web3authBtn').innerHTML = '<span style="font-size: 2.5em;">✅</span><span>Connected</span>';
+        msg('🎉 Web3Auth connected!', 'success');
       } catch (e) {
         console.error('Web3Auth Error:', e);
         msg('❌ Web3Auth failed: ' + e.message, 'error');
       }
     }
-    // ... rest of your JS unchanged ...
+
+    function disconnect() {
+      if (web3auth && web3auth.connected) {
+        web3auth.logout();
+      }
+      userAddr = null;
+      updateWalletStatus(false);
+      document.getElementById('userAddr').textContent = '-';
+      document.getElementById('userNet').textContent = '-';
+      document.getElementById('userBal').textContent = '-';
+      document.getElementById('adminBadge').innerHTML = '';
+      document.getElementById('metamaskBtn').classList.remove('connected');
+      document.getElementById('metamaskBtn').innerHTML = '<span style="font-size: 2.5em;">🦊</span><span>MetaMask</span>';
+      document.getElementById('web3authBtn').classList.remove('connected');
+      document.getElementById('web3authBtn').innerHTML = '<span style="font-size: 2.5em;">🔐</span><span>Web3Auth</span>';
+      msg('👋 Disconnected', 'info');
+    }
+
+    document.getElementById('metamaskBtn').onclick = connectMetaMask;
+    document.getElementById('web3authBtn').onclick = connectWeb3Auth;
+    document.getElementById('disconnectBtn').onclick = disconnect;
+    document.getElementById('refreshBtn').onclick = updateLCD;
+
+    setInterval(updateLCD, 15000);
+    
+    window.addEventListener('DOMContentLoaded', () => {
+      updateWalletStatus(false);
+      updateLCD();
+    });
   </script>
 </body>
 </html>
