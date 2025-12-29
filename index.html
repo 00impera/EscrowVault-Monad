@@ -3,9 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Dragon Escrow Vault - LCD Dashboard</title>
+  <title>Dragon Escrow Vault - LIFE Dashboard</title>
   <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/web3/4.3.0/web3.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@web3auth/modal@8.0.0/dist/modal.umd.min.js"></script>
   <style>
     :root {
       --life-green: #00ffb3;
@@ -47,9 +48,13 @@
       0%,100% { opacity: 1; }
       50% { opacity: 0.8; }
     }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.8; transform: scale(1.05); }
+    }
     .container {
-      max-width: 700px;
-      margin: 60px auto 0 auto;
+      max-width: 900px;
+      margin: 40px auto 0 auto;
       padding: 40px 24px;
       position: relative;
       z-index: 1;
@@ -63,14 +68,14 @@
       margin-bottom: 38px;
       margin-top: 18px;
       color: var(--life-green);
-      font-size: 1.7em;
+      font-size: 1.5em;
       font-family: 'Share Tech Mono', monospace;
       text-shadow: 0 0 18px #00ffb3cc, 0 0 2px #00ffb3a0;
       letter-spacing: 1.5px;
       min-height: 260px;
       display: flex;
       flex-direction: column;
-      gap: 22px;
+      gap: 18px;
       align-items: flex-start;
       justify-content: center;
       opacity: 0.99;
@@ -82,35 +87,31 @@
     }
     .lcd-label {
       color: #baffd9;
-      font-size: 1.15em;
+      font-size: 1em;
       margin-right: 12px;
       font-weight: 700;
       letter-spacing: 0.5px;
       text-shadow: 0 0 8px #00ffb3a0;
     }
-    .lcd-flame {
-      color: var(--flame);
-      font-size: 1.2em;
-      margin-right: 6px;
-      vertical-align: middle;
-      filter: drop-shadow(0 0 6px #ff6a00cc);
+    .lcd-value {
+      color: var(--gold);
+      font-weight: bold;
+      text-shadow: 0 0 18px #ffd700cc;
+      font-size: 1.05em;
     }
     .lcd-life {
       color: var(--life-green);
       font-weight: bold;
       text-shadow: 0 0 18px #00ffb3cc;
-      font-size: 1.1em;
+      font-size: 1.2em;
+      animation: pulse 2s ease-in-out infinite;
     }
     .lcd-gas {
       color: var(--flame);
       font-weight: bold;
       text-shadow: 0 0 18px #ff6a00cc;
-      font-size: 1.1em;
-    }
-    .lcd-dashboard {
-      color: var(--gold);
-      font-weight: bold;
-      text-shadow: 0 0 8px #ffd700cc;
+      font-size: 1.2em;
+      animation: pulse 2.5s ease-in-out infinite;
     }
     .lcd-title {
       font-size: 2.2em;
@@ -136,6 +137,12 @@
       object-fit: cover;
       border: 2.5px solid var(--gold);
     }
+    .lcd-row {
+      display: flex;
+      align-items: center;
+      width: 100%;
+      flex-wrap: wrap;
+    }
     .wallet-section {
       display: flex;
       flex-direction: column;
@@ -159,7 +166,16 @@
       width: 100%;
       letter-spacing: 1px;
     }
-    .wallet-btn:hover { background: #ffd700; color: #0f172a; }
+    .wallet-btn:hover { 
+      background: #ffd700; 
+      color: #0f172a; 
+      transform: translateY(-2px);
+      box-shadow: 0 0 36px #ffd700cc;
+    }
+    .wallet-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
     .wallet-address {
       color: #baffd9;
       font-size: 1.1em;
@@ -197,32 +213,103 @@
       color: #ffd700;
       border: 2px solid #ffd700;
     }
+    .life-section {
+      background: rgba(0,255,179,0.05);
+      border: 2px solid var(--life-green);
+      border-radius: 16px;
+      padding: 24px;
+      margin-top: 24px;
+      box-shadow: 0 0 24px rgba(0,255,179,0.3);
+    }
+    .life-title {
+      font-size: 1.5em;
+      color: var(--life-green);
+      margin-bottom: 16px;
+      text-align: center;
+      font-weight: bold;
+    }
+    .life-controls {
+      display: flex;
+      gap: 12px;
+      flex-direction: column;
+    }
+    .life-btn {
+      background: linear-gradient(135deg, #00ffb3, #009e6e);
+      color: #0f172a;
+      border: none;
+      border-radius: 8px;
+      padding: 12px 24px;
+      font-size: 1.1em;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.2s;
+    }
+    .life-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 0 24px #00ffb3cc;
+    }
+    .life-input {
+      background: #0f172a;
+      border: 2px solid var(--life-green);
+      border-radius: 8px;
+      padding: 12px;
+      color: var(--life-green);
+      font-size: 1.1em;
+      font-family: inherit;
+      width: 100%;
+    }
   </style>
 </head>
 <body>
   <div class="container">
     <div id="lcd" class="lcd-display">
       <img src="https://brown-left-viper-691.mypinata.cloud/ipfs/bafybeiarjogrmlafa7t4tzyukv633iy4lf7nxtyqm6jzg2zpkweldfsiru" alt="DragonLock Logo" class="lcd-logo" />
-      <div class="lcd-title">Dragon Escrow Vault</div>
-      <span style="color:#baffd9;">Loading contract stats...</span>
+      <div class="lcd-title">Dragon Escrow Vault - LIFE CORE</div>
+      <span style="color:#baffd9;">Initializing LIFE systems...</span>
     </div>
+    
     <div class="wallet-section">
-      <button class="wallet-btn" id="walletBtn">Connect MetaMask Wallet</button>
+      <button class="wallet-btn" id="walletBtn">Connect with Web3Auth</button>
       <div class="wallet-address" id="walletAddress"></div>
       <div id="adminBadge"></div>
     </div>
+
+    <div class="life-section" id="lifeSection" style="display:none;">
+      <div class="life-title">⚡ LIFE OPERATIONS ⚡</div>
+      <div class="life-controls">
+        <input type="number" id="lifeAmount" class="life-input" placeholder="Enter LIFE amount" min="0" step="1">
+        <button class="life-btn" id="updateLifeBtn">Update LIFE Core</button>
+        <button class="life-btn" id="updateGasBtn">Update GAS Level</button>
+        <button class="life-btn" id="refreshBtn">🔄 Refresh Dashboard</button>
+      </div>
+    </div>
+
     <div id="messages"></div>
   </div>
+
   <script>
     // ---- CONTRACT CONFIG ----
-    const CONTRACT_ADDRESS = "0x39B0A759C18B50ab4126a94dF1B86947BB51a6e4";
+    const ESCROW_ADDRESS = "0x39B0A759C18B50ab4126a94dF1B86947BB51a6e4";
+    const LIFE_CONTRACT_ADDRESS = "0x49d88eB97341108d9C6868d65a6512a4af3d183b";
     const MONAD_CHAIN_ID = "0x8F"; // 143 in hex
     const MONAD_RPC = "https://rpc.monad.xyz";
-    const CONTRACT_ABI = [/* PASTE YOUR FULL ABI HERE (from your message) */];
-    const OWNER_ADDRESS = "0x592B35c8917eD36c39Ef73D0F5e92B0173560b2e";
+    
+    const ESCROW_ABI = [{"inputs":[],"stateMutability":"nonpayable","type":"constructor"},{"inputs":[],"name":"FeePercentTooHigh","type":"error"},{"inputs":[],"name":"InvalidAddress","type":"error"},{"inputs":[],"name":"InvalidAmount","type":"error"},{"inputs":[],"name":"InvalidEscrowId","type":"error"},{"inputs":[],"name":"InvalidState","type":"error"},{"inputs":[],"name":"TransferFailed","type":"error"},{"inputs":[],"name":"UnauthorizedAccess","type":"error"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"address","name":"previousAdmin","type":"address"},{"indexed":false,"internalType":"address","name":"newAdmin","type":"address"}],"name":"AdminChanged","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"beacon","type":"address"}],"name":"BeaconUpgraded","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"escrowId","type":"uint256"}],"name":"DeliveryConfirmed","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"escrowId","type":"uint256"}],"name":"DisputeRaised","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"escrowId","type":"uint256"},{"indexed":true,"internalType":"address","name":"winner","type":"address"}],"name":"DisputeResolved","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"escrowId","type":"uint256"},{"indexed":true,"internalType":"address","name":"buyer","type":"address"},{"indexed":true,"internalType":"address","name":"seller","type":"address"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"}],"name":"EscrowCreated","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"escrowId","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"feeAmount","type":"uint256"}],"name":"FeeCollected","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"address","name":"oldCollector","type":"address"},{"indexed":false,"internalType":"address","name":"newCollector","type":"address"}],"name":"FeeCollectorUpdated","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"uint256","name":"oldPercent","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"newPercent","type":"uint256"}],"name":"FeePercentUpdated","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"escrowId","type":"uint256"},{"indexed":true,"internalType":"address","name":"recipient","type":"address"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"}],"name":"FundsReleased","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"uint8","name":"version","type":"uint8"}],"name":"Initialized","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"previousOwner","type":"address"},{"indexed":true,"internalType":"address","name":"newOwner","type":"address"}],"name":"OwnershipTransferred","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"address","name":"account","type":"address"}],"name":"Paused","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"escrowId","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"}],"name":"PaymentDeposited","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"escrowId","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"}],"name":"Refunded","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"address","name":"account","type":"address"}],"name":"Unpaused","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"implementation","type":"address"}],"name":"Upgraded","type":"event"},{"inputs":[{"internalType":"uint256","name":"_escrowId","type":"uint256"}],"name":"approveRefund","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"_amount","type":"uint256"}],"name":"calculateFee","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"_escrowId","type":"uint256"}],"name":"confirmDelivery","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address payable","name":"_seller","type":"address"},{"internalType":"address","name":"_arbiter","type":"address"},{"internalType":"string","name":"_description","type":"string"}],"name":"createEscrow","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"payable","type":"function"},{"inputs":[],"name":"emergencyWithdraw","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"escrowCount","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"","type":"uint256"}],"name":"escrows","outputs":[{"internalType":"address payable","name":"buyer","type":"address"},{"internalType":"address payable","name":"seller","type":"address"},{"internalType":"address","name":"arbiter","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"},{"internalType":"enum DragonEscrowVault.State","name":"state","type":"uint8"},{"internalType":"uint256","name":"createdAt","type":"uint256"},{"internalType":"string","name":"description","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"feeCollector","outputs":[{"internalType":"address payable","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"feePercent","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"_escrowId","type":"uint256"}],"name":"getEscrow","outputs":[{"internalType":"address","name":"buyer","type":"address"},{"internalType":"address","name":"seller","type":"address"},{"internalType":"address","name":"arbiter","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"},{"internalType":"enum DragonEscrowVault.State","name":"state","type":"uint8"},{"internalType":"uint256","name":"createdAt","type":"uint256"},{"internalType":"string","name":"description","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"_user","type":"address"}],"name":"getUserEscrows","outputs":[{"internalType":"uint256[]","name":"","type":"uint256[]"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address payable","name":"_feeCollector","type":"address"},{"internalType":"uint256","name":"_feePercent","type":"uint256"}],"name":"initialize","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"owner","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"pause","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"paused","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"proxiableUUID","outputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"renounceOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"_escrowId","type":"uint256"}],"name":"requestRefund","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"_escrowId","type":"uint256"},{"internalType":"bool","name":"_releaseToBuyer","type":"bool"}],"name":"resolveDispute","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"totalFeesCollected","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"newOwner","type":"address"}],"name":"transferOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"unpause","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address payable","name":"_newCollector","type":"address"}],"name":"updateFeeCollector","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"_newFeePercent","type":"uint256"}],"name":"updateFeePercent","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"newImplementation","type":"address"}],"name":"upgradeTo","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"newImplementation","type":"address"},{"internalType":"bytes","name":"data","type":"bytes"}],"name":"upgradeToAndCall","outputs":[],"stateMutability":"payable","type":"function"},{"stateMutability":"payable","type":"receive"}];
+    
+    // Minimal ABI for LIFE contract (life() and gas() functions)
+    const LIFE_ABI = [
+      {"inputs":[],"name":"life","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
+      {"inputs":[],"name":"gas","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
+      {"inputs":[{"internalType":"uint256","name":"_newLife","type":"uint256"}],"name":"updateLife","outputs":[],"stateMutability":"nonpayable","type":"function"},
+      {"inputs":[{"internalType":"uint256","name":"_newGas","type":"uint256"}],"name":"updateGas","outputs":[],"stateMutability":"nonpayable","type":"function"}
+    ];
 
-    let web3 = new Web3(MONAD_RPC); // fallback for read-only
-    let contract = new web3.eth.Contract(CONTRACT_ABI, CONTRACT_ADDRESS);
+    let web3 = new Web3(MONAD_RPC);
+    let escrowContract = new web3.eth.Contract(ESCROW_ABI, ESCROW_ADDRESS);
+    let lifeContract = new web3.eth.Contract(LIFE_ABI, LIFE_CONTRACT_ADDRESS);
+    let web3auth = null;
+    let provider = null;
     let userAddress = null;
 
     function showMessage(text, type = 'info') {
@@ -234,139 +321,245 @@
       div.appendChild(msg);
       if (type !== 'info') setTimeout(() => msg.remove(), 5000);
     }
+
     function formatAddress(addr) {
       if (!addr) return '';
       return `${addr.slice(0, 6)}...${addr.slice(-4)}`;
     }
+
     function formatEth(wei) {
       if (!web3) return '';
       return web3.utils.fromWei(wei.toString(), 'ether');
     }
 
-    // LCD Display: fetch and show contract stats
-    async function updateLCD() {
+    // Initialize Web3Auth
+    async function initWeb3Auth() {
       try {
-        const feePercent = await contract.methods.feePercent().call();
-        const totalFees = await contract.methods.totalFeesCollected().call();
-        const feeCollector = await contract.methods.feeCollector().call();
-        const paused = await contract.methods.paused().call();
-        const owner = await contract.methods.owner().call();
-        let escrowCount = 0;
-        let lifeValue = null, gasValue = null;
+        const { Web3Auth } = window.Modal;
+        
+        web3auth = new Web3Auth({
+          clientId: "BNCSx81g7Ukojfyp47J0kQVSUiEuqRe_6iFBMusUyziWdbwdXDceON7f3WlwQ04h7DvvX1jAFhkocwg-PZ_yWqE",
+          web3AuthNetwork: "sapphire_mainnet",
+          chainConfig: {
+            chainNamespace: "eip155",
+            chainId: MONAD_CHAIN_ID,
+            rpcTarget: MONAD_RPC,
+            displayName: "Monad Mainnet",
+            blockExplorer: "https://monadvision.com",
+            ticker: "MON",
+            tickerName: "Monad",
+          },
+        });
 
-        if (contract.methods.escrowCount) {
-          try { escrowCount = await contract.methods.escrowCount().call(); } catch {}
-        }
-        if (contract.methods.life) {
-          try { lifeValue = await contract.methods.life().call(); } catch {}
-        }
-        if (contract.methods.gas) {
-          try { gasValue = await contract.methods.gas().call(); } catch {}
-        }
-
-        document.getElementById('lcd').innerHTML = `
-          <img src="https://brown-left-viper-691.mypinata.cloud/ipfs/bafybeiarjogrmlafa7t4tzyukv633iy4lf7nxtyqm6jzg2zpkweldfsiru" alt="DragonLock Logo" class="lcd-logo" />
-          <div class="lcd-title">Dragon Escrow Vault</div>
-          <div><span class="lcd-label">Platform Fee:</span> <span class="lcd-dashboard">${(feePercent/100).toFixed(2)}%</span></div>
-          <div><span class="lcd-label">Total Fees Collected:</span> <span class="lcd-dashboard">${formatEth(totalFees)} MON</span></div>
-          <div><span class="lcd-label">Fee Collector:</span> <span class="lcd-dashboard">${formatAddress(feeCollector)}</span></div>
-          <div><span class="lcd-label">Paused:</span> <span style="color:${paused ? '#ef4444' : '#00ffb3'};font-weight:bold">${paused ? 'YES' : 'NO'}</span></div>
-          <div><span class="lcd-label">Owner:</span> <span class="lcd-dashboard">${formatAddress(owner)}</span></div>
-          <div><span class="lcd-label">Escrows:</span> <span class="lcd-dashboard">${escrowCount}</span></div>
-          ${lifeValue !== null ? `<div><span class="lcd-label">LIFE CORE:</span> <span class="lcd-life">🟢 ${lifeValue}</span></div>` : ""}
-          ${gasValue !== null ? `<div><span class="lcd-label">GAS:</span> <span class="lcd-gas">🔥 ${gasValue}</span></div>` : ""}
-        `;
-      } catch (err) {
-        document.getElementById('lcd').innerHTML = `<span style="color:#ef4444;">Failed to load contract stats</span>`;
-        showMessage('Failed to load contract stats: ' + (err.message || 'Unknown error'), 'error');
+        await web3auth.initModal();
+        console.log("Web3Auth initialized successfully");
+      } catch (error) {
+        console.error("Web3Auth init error:", error);
+        showMessage("Failed to initialize Web3Auth: " + error.message, 'error');
       }
     }
 
-    // Wallet connect logic
-    document.getElementById('walletBtn').onclick = connectWallet;
+    // LCD Display: fetch and show contract stats
+    async function updateLCD() {
+      try {
+        showMessage('Loading dashboard data...', 'info');
+        
+        const [feePercent, totalFees, feeCollector, paused, owner, escrowCount, lifeValue, gasValue] = await Promise.all([
+          escrowContract.methods.feePercent().call(),
+          escrowContract.methods.totalFeesCollected().call(),
+          escrowContract.methods.feeCollector().call(),
+          escrowContract.methods.paused().call(),
+          escrowContract.methods.owner().call(),
+          escrowContract.methods.escrowCount().call(),
+          lifeContract.methods.life().call().catch(() => 0),
+          lifeContract.methods.gas().call().catch(() => 0)
+        ]);
 
+        document.getElementById('lcd').innerHTML = `
+          <img src="https://brown-left-viper-691.mypinata.cloud/ipfs/bafybeiarjogrmlafa7t4tzyukv633iy4lf7nxtyqm6jzg2zpkweldfsiru" alt="DragonLock Logo" class="lcd-logo" />
+          <div class="lcd-title">🐉 Dragon Escrow Vault - LIFE CORE 🐉</div>
+          
+          <div class="lcd-row">
+            <span class="lcd-label">⚡ LIFE CORE:</span> 
+            <span class="lcd-life">🟢 ${lifeValue}</span>
+          </div>
+          
+          <div class="lcd-row">
+            <span class="lcd-label">🔥 GAS LEVEL:</span> 
+            <span class="lcd-gas">🔥 ${gasValue}</span>
+          </div>
+          
+          <div class="lcd-row">
+            <span class="lcd-label">Platform Fee:</span> 
+            <span class="lcd-value">${(feePercent/100).toFixed(2)}%</span>
+          </div>
+          
+          <div class="lcd-row">
+            <span class="lcd-label">Total Fees:</span> 
+            <span class="lcd-value">${formatEth(totalFees)} MON</span>
+          </div>
+          
+          <div class="lcd-row">
+            <span class="lcd-label">Fee Collector:</span> 
+            <span class="lcd-value">${formatAddress(feeCollector)}</span>
+          </div>
+          
+          <div class="lcd-row">
+            <span class="lcd-label">Status:</span> 
+            <span style="color:${paused ? '#ef4444' : '#00ffb3'};font-weight:bold;text-shadow:0 0 12px ${paused ? '#ef4444' : '#00ffb3'};">
+              ${paused ? '⛔ PAUSED' : '✅ ACTIVE'}
+            </span>
+          </div>
+          
+          <div class="lcd-row">
+            <span class="lcd-label">Owner:</span> 
+            <span class="lcd-value">${formatAddress(owner)}</span>
+          </div>
+          
+          <div class="lcd-row">
+            <span class="lcd-label">Total Escrows:</span> 
+            <span class="lcd-value">${escrowCount}</span>
+          </div>
+        `;
+        
+        showMessage('✨ Dashboard loaded successfully!', 'success');
+      } catch (err) {
+        console.error("LCD update error:", err);
+        document.getElementById('lcd').innerHTML = `
+          <img src="https://brown-left-viper-691.mypinata.cloud/ipfs/bafybeiarjogrmlafa7t4tzyukv633iy4lf7nxtyqm6jzg2zpkweldfsiru" alt="DragonLock Logo" class="lcd-logo" />
+          <div class="lcd-title">Dragon Escrow Vault - LIFE CORE</div>
+          <span style="color:#ef4444;">⚠️ Failed to load contract stats</span>
+        `;
+        showMessage('Failed to load dashboard: ' + (err.message || 'Unknown error'), 'error');
+      }
+    }
+
+    // Connect wallet
     async function connectWallet() {
       try {
-        if (!window.ethereum) {
-          showMessage('Please install MetaMask!', 'error');
-          return;
+        if (!web3auth) {
+          showMessage('Initializing Web3Auth...', 'info');
+          await initWeb3Auth();
         }
-        showMessage('Requesting wallet connection...', 'info');
-        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+
+        showMessage('Connecting to Web3Auth...', 'info');
+        provider = await web3auth.connect();
+
+        if (!provider) {
+          throw new Error('Failed to connect to Web3Auth');
+        }
+
+        // Initialize web3 with provider
+        web3 = new Web3(provider);
+        escrowContract = new web3.eth.Contract(ESCROW_ABI, ESCROW_ADDRESS);
+        lifeContract = new web3.eth.Contract(LIFE_ABI, LIFE_CONTRACT_ADDRESS);
+
+        // Get user address
+        const accounts = await web3.eth.getAccounts();
         userAddress = accounts[0];
-
-        // Switch to Monad network
-        try {
-          await window.ethereum.request({
-            method: 'wallet_switchEthereumChain',
-            params: [{ chainId: MONAD_CHAIN_ID }],
-          });
-        } catch (switchError) {
-          if (switchError.code === 4902) {
-            await window.ethereum.request({
-              method: 'wallet_addEthereumChain',
-              params: [{
-                chainId: MONAD_CHAIN_ID,
-                chainName: 'Monad Mainnet',
-                nativeCurrency: { name: 'Monad', symbol: 'MON', decimals: 18 },
-                rpcUrls: [MONAD_RPC],
-                blockExplorerUrls: ['https://monadvision.com']
-              }]
-            });
-          } else {
-            showMessage('Failed to switch network: ' + switchError.message, 'error');
-            return;
-          }
-        }
-
-        // Re-initialize web3 with wallet provider
-        web3 = new Web3(window.ethereum);
-        contract = new web3.eth.Contract(CONTRACT_ABI, CONTRACT_ADDRESS);
 
         document.getElementById('walletBtn').textContent = 'Connected ✓';
         document.getElementById('walletBtn').style.background = 'linear-gradient(90deg, #00ffb3, #ffd700)';
         document.getElementById('walletAddress').textContent = formatAddress(userAddress);
 
         // Check if admin
-        const owner = await contract.methods.owner().call();
+        const owner = await escrowContract.methods.owner().call();
         if (owner.toLowerCase() === userAddress.toLowerCase()) {
-          document.getElementById('adminBadge').innerHTML = '<span class="admin-badge">Admin (Trezor)</span>';
+          document.getElementById('adminBadge').innerHTML = '<span class="admin-badge">⚡ Admin Access</span>';
+          document.getElementById('lifeSection').style.display = 'block';
         } else {
           document.getElementById('adminBadge').innerHTML = '';
+          document.getElementById('lifeSection').style.display = 'none';
         }
 
-        showMessage('Wallet connected!', 'success');
-
-        // Update LCD with live data from wallet
-        updateLCD();
-
-        // Listen for account changes
-        window.ethereum.on('accountsChanged', (accounts) => {
-          if (accounts.length === 0) {
-            userAddress = null;
-            document.getElementById('walletBtn').textContent = 'Connect MetaMask Wallet';
-            document.getElementById('walletBtn').style.background = '#0f172a';
-            document.getElementById('walletAddress').textContent = '';
-            document.getElementById('adminBadge').innerHTML = '';
-            showMessage('Wallet disconnected', 'info');
-            updateLCD();
-          } else {
-            location.reload();
-          }
-        });
-
-        // Listen for chain changes
-        window.ethereum.on('chainChanged', () => {
-          location.reload();
-        });
+        showMessage('🎉 Wallet connected successfully!', 'success');
+        await updateLCD();
 
       } catch (error) {
-        showMessage('Failed to connect wallet: ' + (error.message || 'Unknown error'), 'error');
+        console.error("Connect error:", error);
+        showMessage('Failed to connect: ' + (error.message || 'Unknown error'), 'error');
       }
     }
 
-    // On load, update LCD
-    window.addEventListener('DOMContentLoaded', updateLCD);
-  </script>
-</body>
-</html>
+    // Update LIFE Core
+    async function updateLifeCore() {
+      if (!userAddress) {
+        showMessage('Please connect wallet first', 'error');
+        return;
+      }
+
+      const amount = document.getElementById('lifeAmount').value;
+      if (!amount || amount < 0) {
+        showMessage('Please enter a valid LIFE amount', 'error');
+        return;
+      }
+
+      try {
+        showMessage('Updating LIFE Core...', 'info');
+        document.getElementById('updateLifeBtn').disabled = true;
+
+        const tx = await lifeContract.methods.updateLife(amount).send({
+          from: userAddress,
+          gas: 100000
+        });
+
+        showMessage('✨ LIFE Core updated successfully!', 'success');
+        console.log('Transaction:', tx);
+        
+        // Refresh dashboard
+        setTimeout(() => updateLCD(), 2000);
+        document.getElementById('lifeAmount').value = '';
+      } catch (error) {
+        console.error("Update LIFE error:", error);
+        showMessage('Failed to update LIFE: ' + (error.message || 'Unknown error'), 'error');
+      } finally {
+        document.getElementById('updateLifeBtn').disabled = false;
+      }
+    }
+
+    // Update GAS Level
+    async function updateGasLevel() {
+      if (!userAddress) {
+        showMessage('Please connect wallet first', 'error');
+        return;
+      }
+
+      const amount = document.getElementById('lifeAmount').value;
+      if (!amount || amount < 0) {
+        showMessage('Please enter a valid GAS amount', 'error');
+        return;
+      }
+
+      try {
+        showMessage('Updating GAS Level...', 'info');
+        document.getElementById('updateGasBtn').disabled = true;
+
+        const tx = await lifeContract.methods.updateGas(amount).send({
+          from: userAddress,
+          gas: 100000
+        });
+
+        showMessage('🔥 GAS Level updated successfully!', 'success');
+        console.log('Transaction:', tx);
+        
+        // Refresh dashboard
+        setTimeout(() => updateLCD(), 2000);
+        document.getElementById('lifeAmount').value = '';
+      } catch (error) {
+        console.error("Update GAS error:", error);
+        showMessage('Failed to update GAS: ' + (error.message || 'Unknown error'), 'error');
+      } finally {
+        document.getElementById('updateGasBtn').disabled = false;
+      }
+    }
+
+    // Event listeners
+    document.getElementById('walletBtn').onclick = connectWallet;
+    document.getElementById('updateLifeBtn').onclick = updateLifeCore;
+    document.getElementById('updateGasBtn').onclick = updateGasLevel;
+    document.getElementById('refreshBtn').onclick = updateLCD;
+
+    // Initialize on load
+    window.addEventListener('DOMContentLoaded', async () => {
+      await updateLCD();
+    });
