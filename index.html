@@ -3,114 +3,344 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Dragon Escrow Vault - Complete Dashboard</title>
+  <title>Dragon Escrow Vault - Monad Dashboard</title>
   <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/web3@4.3.0/dist/web3.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/web3/1.10.0/web3.min.js"></script>
   <style>
-    :root { --green: #00ffb3; --gold: #ffd700; --red: #ff4444; --bg: #0f172a; --blue: #1e293b; }
+    :root {
+      --green: #00ff00;
+      --gold: #ffff00;
+      --red: #ff4444;
+      --bg: #000000;
+      --panel: #0a0a0a;
+    }
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
       font-family: 'Share Tech Mono', monospace;
-      background: linear-gradient(135deg, #0f172a 0%, #1e293b 60%, #0f172a 100%);
+      background: #000000;
       min-height: 100vh;
       color: var(--gold);
-      padding: 30px 15px;
+      padding: 20px;
+      position: relative;
     }
     body::before {
       content: '';
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
       background: 
-        radial-gradient(circle at 20% 50%, rgba(0,255,179,0.10) 0%, transparent 60%),
-        radial-gradient(circle at 80% 80%, rgba(255,215,0,0.08) 0%, transparent 60%);
+        radial-gradient(circle at 20% 50%, rgba(0,255,0,0.15) 0%, transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(255,255,0,0.12) 0%, transparent 50%);
       pointer-events: none;
-      animation: shift 18s ease-in-out infinite;
+      animation: shift 20s ease-in-out infinite;
+      z-index: 0;
     }
-    @keyframes shift { 0%,100% { opacity: 1; } 50% { opacity: 0.8; } }
-    @keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.8; transform: scale(1.05); } }
-    @keyframes glow { 0%, 100% { box-shadow: 0 0 40px #00ffb3cc; } 50% { box-shadow: 0 0 60px #00ffb3ff; } }
-    .container { max-width: 1200px; margin: 0 auto; position: relative; z-index: 1; }
-    h1 { color: var(--green); text-align: center; margin-bottom: 30px; font-size: 2.5em; text-shadow: 0 0 30px var(--green); animation: pulse 3s ease-in-out infinite; }
+    @keyframes shift { 
+      0%, 100% { opacity: 1; } 
+      50% { opacity: 0.7; } 
+    }
+    @keyframes pulse { 
+      0%, 100% { opacity: 1; transform: scale(1); } 
+      50% { opacity: 0.85; transform: scale(1.02); } 
+    }
+    @keyframes glow { 
+      0%, 100% { box-shadow: 0 0 30px rgba(0,255,0,0.6); } 
+      50% { box-shadow: 0 0 50px rgba(0,255,0,0.9); } 
+    }
+    .container { 
+      max-width: 1400px; 
+      margin: 0 auto; 
+      position: relative; 
+      z-index: 1; 
+    }
+    h1 { 
+      color: var(--green); 
+      text-align: center; 
+      margin-bottom: 30px; 
+      font-size: 2.5em; 
+      text-shadow: 0 0 30px var(--green); 
+      animation: pulse 3s ease-in-out infinite; 
+    }
     .lcd {
-      background: linear-gradient(135deg, var(--bg) 60%, rgba(0,255,179,0.15) 100%);
-      border: 8px solid var(--green);
-      border-left: 0; border-right: 0;
-      border-radius: 24px;
+      background: var(--panel);
+      border: 6px solid var(--green);
+      border-left: 0;
+      border-right: 0;
+      border-radius: 20px;
       padding: 30px;
       margin-bottom: 25px;
       animation: glow 3s ease-in-out infinite;
     }
-    .logo { display: block; margin: 0 auto 15px; width: 100px; height: 100px; border-radius: 20px; border: 3px solid var(--gold); animation: pulse 4s ease-in-out infinite; }
+    .logo { 
+      display: block; 
+      margin: 0 auto 15px; 
+      width: 100px; 
+      height: 100px; 
+      border-radius: 20px; 
+      border: 3px solid var(--gold); 
+      animation: pulse 4s ease-in-out infinite; 
+    }
     .title {
       font-size: 1.8em;
       font-weight: 900;
-      background: linear-gradient(135deg, var(--gold), var(--green));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
+      color: var(--green);
       text-align: center;
       margin-bottom: 20px;
+      text-shadow: 0 0 20px var(--green);
     }
     .row {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 10px;
+      padding: 12px 15px;
       margin: 8px 0;
-      background: rgba(30, 41, 59, 0.5);
+      background: rgba(0, 255, 0, 0.05);
       border-radius: 8px;
-      border-left: 3px solid var(--green);
+      border-left: 4px solid var(--green);
     }
-    .label { color: #baffd9; font-weight: 700; font-size: 0.95em; }
-    .value { color: var(--gold); font-weight: bold; text-shadow: 0 0 12px var(--gold); }
-    .loading { animation: pulse 1.5s ease-in-out infinite; }
-    .status-active { color: var(--green); font-weight: bold; animation: pulse 2s ease-in-out infinite; }
-    .status-paused { color: var(--red); font-weight: bold; animation: pulse 2s ease-in-out infinite; }
-    .fees { color: var(--red); background: var(--bg); padding: 4px 12px; border-radius: 6px; border: 2px solid var(--red); animation: pulse 2.5s ease-in-out infinite; }
-    .wallet { background: rgba(15, 23, 42, 0.9); border: 3px solid var(--green); border-radius: 16px; padding: 25px; margin-bottom: 25px; }
-    .wallet-status { text-align: center; margin-bottom: 20px; font-size: 1.2em; }
-    .indicator { display: inline-block; width: 12px; height: 12px; border-radius: 50%; margin-right: 8px; animation: pulse 2s ease-in-out infinite; }
-    .indicator.on { background: var(--green); box-shadow: 0 0 15px var(--green); }
-    .indicator.off { background: var(--red); box-shadow: 0 0 15px var(--red); }
-    .wallet-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
-    .wallet-btn { background: var(--bg); color: var(--gold); border: 2px solid var(--gold); border-radius: 12px; padding: 20px 15px; font-size: 1.1em; font-weight: 700; cursor: pointer; font-family: inherit; transition: all 0.3s; display: flex; flex-direction: column; align-items: center; gap: 8px; }
-    .wallet-btn:hover:not(:disabled) { background: var(--gold); color: var(--bg); transform: translateY(-3px); }
-    .wallet-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-    .wallet-btn.connected { background: linear-gradient(135deg, var(--green), var(--gold)); color: var(--bg); border-color: var(--green); }
-    .wallet-info { background: rgba(30, 41, 59, 0.6); border: 2px solid var(--green); border-radius: 12px; padding: 15px; display: none; }
-    .wallet-info.show { display: block; }
-    .info-row { display: flex; justify-content: space-between; padding: 8px; margin: 5px 0; background: rgba(15, 23, 42, 0.5); border-radius: 6px; }
-    .info-label { color: #baffd9; font-weight: 600; }
-    .info-value { color: var(--gold); font-weight: bold; }
-    .admin-badge { background: linear-gradient(135deg, var(--gold), #ff6a00); color: var(--bg); padding: 8px 15px; border-radius: 8px; text-align: center; margin-top: 10px; font-weight: 900; animation: pulse 2s ease-in-out infinite; }
-    .btn { background: linear-gradient(135deg, var(--green), var(--gold)); color: var(--bg); border: none; border-radius: 10px; padding: 12px 30px; font-size: 1.1em; font-weight: 900; cursor: pointer; font-family: inherit; width: 100%; transition: all 0.3s; margin-top: 10px; }
-    .btn:hover:not(:disabled) { transform: translateY(-3px); box-shadow: 0 5px 20px var(--green); }
-    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
-    .btn-disconnect { background: var(--red); border: 2px solid var(--red); }
-    .btn-disconnect:hover { background: #dc2626; }
-    .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 25px; }
-    .stat { background: rgba(15, 23, 42, 0.8); border: 2px solid var(--green); border-radius: 12px; padding: 18px; text-align: center; transition: all 0.3s; }
-    .stat:hover { transform: translateY(-3px); box-shadow: 0 5px 25px rgba(0,255,179,0.4); }
-    .stat-label { color: #baffd9; font-size: 0.85em; margin-bottom: 8px; }
-    .stat-value { color: var(--gold); font-size: 1.6em; font-weight: bold; text-shadow: 0 0 15px var(--gold); }
-    .msg { padding: 12px 20px; border-radius: 10px; margin: 15px 0; text-align: center; font-weight: bold; font-size: 0.95em; }
-    .msg-success { background: linear-gradient(135deg, var(--green), var(--gold)); color: var(--bg); }
-    .msg-error { background: linear-gradient(135deg, var(--red), #dc2626); color: #fff; }
-    .msg-info { background: rgba(255, 215, 0, 0.2); color: var(--gold); border: 2px solid var(--gold); }
+    .label { 
+      color: var(--green); 
+      font-weight: 700; 
+      font-size: 1em; 
+    }
+    .value { 
+      color: var(--gold); 
+      font-weight: bold; 
+      text-shadow: 0 0 15px var(--gold); 
+    }
+    .loading { 
+      animation: pulse 1.5s ease-in-out infinite; 
+      color: var(--green);
+    }
+    .status-active { 
+      color: var(--green); 
+      font-weight: bold; 
+      animation: pulse 2s ease-in-out infinite; 
+    }
+    .status-paused { 
+      color: var(--red); 
+      font-weight: bold; 
+      animation: pulse 2s ease-in-out infinite; 
+    }
+    .fees { 
+      color: var(--gold); 
+      background: rgba(255, 255, 0, 0.1); 
+      padding: 6px 14px; 
+      border-radius: 6px; 
+      border: 2px solid var(--gold); 
+      font-weight: 900;
+    }
+    .wallet { 
+      background: var(--panel); 
+      border: 3px solid var(--green); 
+      border-radius: 16px; 
+      padding: 25px; 
+      margin-bottom: 25px; 
+    }
+    .wallet-status { 
+      text-align: center; 
+      margin-bottom: 20px; 
+      font-size: 1.3em; 
+      font-weight: bold;
+    }
+    .indicator { 
+      display: inline-block; 
+      width: 14px; 
+      height: 14px; 
+      border-radius: 50%; 
+      margin-right: 10px; 
+      animation: pulse 2s ease-in-out infinite; 
+    }
+    .indicator.on { 
+      background: var(--green); 
+      box-shadow: 0 0 20px var(--green); 
+    }
+    .indicator.off { 
+      background: var(--red); 
+      box-shadow: 0 0 20px var(--red); 
+    }
+    .wallet-btns { 
+      display: grid; 
+      grid-template-columns: 1fr 1fr; 
+      gap: 15px; 
+      margin-bottom: 20px; 
+    }
+    .wallet-btn { 
+      background: var(--bg); 
+      color: var(--green); 
+      border: 3px solid var(--green); 
+      border-radius: 12px; 
+      padding: 25px 15px; 
+      font-size: 1.1em; 
+      font-weight: 700; 
+      cursor: pointer; 
+      font-family: inherit; 
+      transition: all 0.3s; 
+      display: flex; 
+      flex-direction: column; 
+      align-items: center; 
+      gap: 10px; 
+    }
+    .wallet-btn:hover:not(:disabled) { 
+      background: var(--green); 
+      color: var(--bg); 
+      transform: translateY(-3px); 
+      box-shadow: 0 8px 25px rgba(0,255,0,0.5); 
+    }
+    .wallet-btn:disabled { 
+      opacity: 0.5; 
+      cursor: not-allowed; 
+    }
+    .wallet-btn.connected { 
+      background: var(--green); 
+      color: var(--bg); 
+      border-color: var(--green); 
+    }
+    .wallet-info { 
+      background: rgba(0, 255, 0, 0.05); 
+      border: 2px solid var(--green); 
+      border-radius: 12px; 
+      padding: 15px; 
+      display: none; 
+    }
+    .wallet-info.show { 
+      display: block; 
+    }
+    .info-row { 
+      display: flex; 
+      justify-content: space-between; 
+      padding: 10px; 
+      margin: 5px 0; 
+      background: rgba(0, 0, 0, 0.6); 
+      border-radius: 6px; 
+    }
+    .info-label { 
+      color: var(--green); 
+      font-weight: 600; 
+    }
+    .info-value { 
+      color: var(--gold); 
+      font-weight: bold; 
+    }
+    .admin-badge { 
+      background: linear-gradient(135deg, var(--gold), #ff6a00); 
+      color: var(--bg); 
+      padding: 10px 15px; 
+      border-radius: 8px; 
+      text-align: center; 
+      margin-top: 15px; 
+      font-weight: 900; 
+      animation: pulse 2s ease-in-out infinite; 
+      font-size: 1.1em;
+    }
+    .btn { 
+      background: var(--green); 
+      color: var(--bg); 
+      border: none; 
+      border-radius: 10px; 
+      padding: 14px 30px; 
+      font-size: 1.1em; 
+      font-weight: 900; 
+      cursor: pointer; 
+      font-family: inherit; 
+      width: 100%; 
+      transition: all 0.3s; 
+      margin-top: 10px; 
+    }
+    .btn:hover:not(:disabled) { 
+      transform: translateY(-3px); 
+      box-shadow: 0 8px 25px rgba(0,255,0,0.6); 
+      background: var(--gold); 
+      color: var(--bg);
+    }
+    .btn:disabled { 
+      opacity: 0.5; 
+      cursor: not-allowed; 
+    }
+    .btn-disconnect { 
+      background: var(--red); 
+      border: 2px solid var(--red); 
+      color: #fff; 
+    }
+    .btn-disconnect:hover:not(:disabled) { 
+      background: #dc2626; 
+      box-shadow: 0 8px 25px rgba(255,68,68,0.6);
+    }
+    .stats { 
+      display: grid; 
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); 
+      gap: 15px; 
+      margin-bottom: 25px; 
+    }
+    .stat { 
+      background: var(--panel); 
+      border: 3px solid var(--green); 
+      border-radius: 12px; 
+      padding: 20px; 
+      text-align: center; 
+      transition: all 0.3s; 
+    }
+    .stat:hover { 
+      transform: translateY(-3px); 
+      box-shadow: 0 5px 25px rgba(0,255,0,0.4); 
+    }
+    .stat-label { 
+      color: var(--green); 
+      font-size: 0.9em; 
+      margin-bottom: 10px; 
+      font-weight: 600;
+    }
+    .stat-value { 
+      color: var(--gold); 
+      font-size: 1.4em; 
+      font-weight: bold; 
+      text-shadow: 0 0 15px var(--gold); 
+      word-break: break-all; 
+    }
+    .msg { 
+      padding: 15px 20px; 
+      border-radius: 10px; 
+      margin: 15px 0; 
+      text-align: center; 
+      font-weight: bold; 
+      font-size: 1em; 
+    }
+    .msg-success { 
+      background: var(--green); 
+      color: var(--bg); 
+    }
+    .msg-error { 
+      background: var(--red); 
+      color: #fff; 
+    }
+    .msg-info { 
+      background: rgba(255, 255, 0, 0.15); 
+      color: var(--gold); 
+      border: 2px solid var(--gold); 
+    }
+    .auto-refresh {
+      text-align: center;
+      color: var(--green);
+      margin-top: 15px;
+      font-size: 0.9em;
+      font-weight: 600;
+    }
     @media (max-width: 768px) {
       h1 { font-size: 2em; }
       .wallet-btns { grid-template-columns: 1fr; }
-      .row { flex-direction: column; gap: 5px; text-align: center; }
+      .row { flex-direction: column; gap: 8px; text-align: center; }
+      .stats { grid-template-columns: 1fr; }
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>🐉 Dragon Escrow Vault</h1>
+    <h1>🐉 DRAGON ESCROW VAULT</h1>
+    
     <!-- Wallet Connection -->
     <div class="wallet">
       <div class="wallet-status">
         <span class="indicator off" id="indicator"></span>
-        <span id="statusText">Not Connected</span>
+        <span id="statusText">NOT CONNECTED</span>
       </div>
       <div class="wallet-btns">
         <button class="wallet-btn" id="metamaskBtn">
@@ -136,19 +366,20 @@
           <span class="info-value" id="userBal">-</span>
         </div>
         <div id="adminBadge"></div>
-        <button class="btn btn-disconnect" id="disconnectBtn">Disconnect</button>
+        <button class="btn btn-disconnect" id="disconnectBtn">DISCONNECT</button>
       </div>
     </div>
+    
     <!-- LCD Dashboard -->
     <div class="lcd">
-      <img src="https://brown-left-viper-691.mypinata.cloud/ipfs/bafybeiarjogrmlafa7t4tzyukv633iy4lf7nxtyqm6jzg2zpkweldfsiru" class="logo" />
+      <img src="https://brown-left-viper-691.mypinata.cloud/ipfs/bafybeiarjogrmlafa7t4tzyukv633iy4lf7nxtyqm6jzg2zpkweldfsiru" class="logo" alt="Dragon Logo" />
       <div class="title">LIVE LCD DASHBOARD</div>
       <div class="row">
         <span class="label">⚡ Platform Fee:</span>
         <span class="value loading" id="fee">...</span>
       </div>
       <div class="row">
-        <span class="label">💰 Total Fees:</span>
+        <span class="label">💰 Total Fees Collected:</span>
         <span class="fees" id="total">...</span>
       </div>
       <div class="row">
@@ -156,20 +387,21 @@
         <span class="value loading" id="collector">...</span>
       </div>
       <div class="row">
-        <span class="label">🔐 Status:</span>
+        <span class="label">🔐 Contract Status:</span>
         <span class="value loading" id="status">...</span>
       </div>
       <div class="row">
-        <span class="label">👑 Owner:</span>
+        <span class="label">👑 Contract Owner:</span>
         <span class="value loading" id="owner">...</span>
       </div>
       <div class="row">
-        <span class="label">📊 Escrows:</span>
+        <span class="label">📊 Total Escrows:</span>
         <span class="value loading" id="count">...</span>
       </div>
       <button class="btn" id="refreshBtn">🔄 REFRESH DASHBOARD</button>
-      <div style="text-align: center; color: var(--green); margin-top: 10px; font-size: 0.85em;">⚡ Auto-refresh: 15s</div>
+      <div class="auto-refresh">⚡ Auto-refresh every 15 seconds</div>
     </div>
+    
     <!-- Stats -->
     <div class="stats">
       <div class="stat">
@@ -177,21 +409,24 @@
         <div class="stat-value">Monad</div>
       </div>
       <div class="stat">
-        <div class="stat-label">⛓️ Chain</div>
-        <div class="stat-value" id="chain">143</div>
+        <div class="stat-label">⛓️ Chain ID</div>
+        <div class="stat-value">143</div>
       </div>
       <div class="stat">
-        <div class="stat-label">📡 RPC</div>
-        <div class="stat-value" id="rpc">https://rpc.monad.xyz</div>
+        <div class="stat-label">📡 RPC Endpoint</div>
+        <div class="stat-value" style="font-size: 0.8em;">rpc.monad.xyz</div>
       </div>
       <div class="stat">
-        <div class="stat-label">📦 Block</div>
-        <div class="stat-value" id="block">...</div>
+        <div class="stat-label">📦 Block Height</div>
+        <div class="stat-value loading" id="block">...</div>
       </div>
     </div>
+    
     <div id="msg"></div>
   </div>
+
   <script>
+    // Configuration
     const CONFIG = {
       addr: "0x39B0A759C18B50ab4126a94dF1B86947BB51a6e4",
       rpc: "https://rpc.monad.xyz",
@@ -199,23 +434,44 @@
       chainId: "0x8F",
       chainIdDec: 143
     };
-    const ABI = [/* ...your full ABI here... */];
+
+    // Contract ABI
+    const ABI = [
+      {"inputs":[],"name":"feePercent","outputs":[{"internalType":"uint256","type":"uint256"}],"stateMutability":"view","type":"function"},
+      {"inputs":[],"name":"feeCollector","outputs":[{"internalType":"address","type":"address"}],"stateMutability":"view","type":"function"},
+      {"inputs":[],"name":"paused","outputs":[{"internalType":"bool","type":"bool"}],"stateMutability":"view","type":"function"},
+      {"inputs":[],"name":"owner","outputs":[{"internalType":"address","type":"address"}],"stateMutability":"view","type":"function"},
+      {"inputs":[],"name":"escrowCount","outputs":[{"internalType":"uint256","type":"uint256"}],"stateMutability":"view","type":"function"},
+      {"inputs":[],"name":"totalSupply","outputs":[{"internalType":"uint256","type":"uint256"}],"stateMutability":"view","type":"function"}
+    ];
+
+    // Initialize Web3
     let w3 = new Web3(CONFIG.rpc);
     let c = new w3.eth.Contract(ABI, CONFIG.addr);
     let userAddr = null;
-    // Utility
-    function msg(t, type = 'info') {
-      const d = document.getElementById('msg');
-      d.innerHTML = `<div class="msg msg-${type}">${t}</div>`;
-      if (type !== 'info') setTimeout(() => d.innerHTML = '', 5000);
+
+    // Utility Functions
+    function msg(text, type = 'info') {
+      const msgDiv = document.getElementById('msg');
+      msgDiv.innerHTML = `<div class="msg msg-${type}">${text}</div>`;
+      if (type !== 'info') {
+        setTimeout(() => msgDiv.innerHTML = '', 5000);
+      }
     }
-    function fmt(a) { return a ? `${a.slice(0,6)}...${a.slice(-4)}` : '-'; }
+
+    function formatAddress(addr) {
+      return addr ? `${addr.slice(0, 6)}...${addr.slice(-4)}` : '-';
+    }
+
     function setLoading(id, val) {
       const el = document.getElementById(id);
-      el.textContent = val;
-      el.classList.remove('loading');
+      if (el) {
+        el.textContent = val;
+        el.classList.remove('loading');
+      }
     }
-    // LCD/Stats
+
+    // Fetch Total Fees via API
     async function fetchTotalFees() {
       try {
         const res = await fetch(CONFIG.api, {
@@ -233,13 +489,17 @@
         });
         const data = await res.json();
         if (data && data.result) {
-          return w3.utils.fromWei(w3.utils.toBN(data.result), 'ether');
+          const wei = w3.utils.toBN(data.result);
+          return parseFloat(w3.utils.fromWei(wei, 'ether')).toFixed(4);
         }
-        return "0";
+        return "0.0000";
       } catch (err) {
-        return "API error";
+        console.error('API Error:', err);
+        return "Error";
       }
     }
+
+    // Update LCD Dashboard
     async function updateLCD() {
       try {
         setLoading('fee', '...');
@@ -248,7 +508,8 @@
         setLoading('status', '...');
         setLoading('owner', '...');
         setLoading('count', '...');
-        // Contract stats
+        setLoading('block', '...');
+
         const [feePercent, feeCollector, paused, owner, escrowCount, totalFeesAPI, blockNum] = await Promise.all([
           c.methods.feePercent().call(),
           c.methods.feeCollector().call(),
@@ -258,35 +519,41 @@
           fetchTotalFees(),
           w3.eth.getBlockNumber()
         ]);
-        setLoading('fee', (feePercent/100).toFixed(2) + '%');
+
+        setLoading('fee', (feePercent / 100).toFixed(2) + '%');
         setLoading('total', totalFeesAPI + ' MON');
-        setLoading('collector', fmt(feeCollector));
+        setLoading('collector', formatAddress(feeCollector));
         setLoading('status', paused ? '⛔ PAUSED' : '✅ ACTIVE');
         document.getElementById('status').className = paused ? 'value status-paused' : 'value status-active';
-        setLoading('owner', fmt(owner));
+        setLoading('owner', formatAddress(owner));
         setLoading('count', escrowCount);
-        document.getElementById('block').textContent = blockNum;
+        setLoading('block', blockNum);
       } catch (err) {
-        msg('Failed to load contract stats: ' + (err.message || 'Unknown error'), 'error');
+        console.error('Update LCD Error:', err);
+        msg('⚠️ Failed to load contract data: ' + (err.message || 'Unknown error'), 'error');
       }
     }
-    // Wallet
+
+    // Wallet Status Update
     function updateWalletStatus(connected, method = '') {
       const ind = document.getElementById('indicator');
       const txt = document.getElementById('statusText');
       const info = document.getElementById('walletInfo');
+      
       if (connected) {
         ind.className = 'indicator on';
-        txt.textContent = `Connected via ${method}`;
-        txt.style.color = '#00ffb3';
+        txt.textContent = `CONNECTED VIA ${method.toUpperCase()}`;
+        txt.style.color = '#00ff00';
         info.classList.add('show');
       } else {
         ind.className = 'indicator off';
-        txt.textContent = 'Not Connected';
+        txt.textContent = 'NOT CONNECTED';
         txt.style.color = '#ff4444';
         info.classList.remove('show');
       }
     }
+
+    // Switch to Monad Network
     async function switchToMonad() {
       try {
         await window.ethereum.request({
@@ -300,52 +567,124 @@
             params: [{
               chainId: CONFIG.chainId,
               chainName: 'Monad Mainnet',
-              nativeCurrency: { name: 'Monad', symbol: 'MON', decimals: 18 },
+              nativeCurrency: { 
+                name: 'Monad', 
+                symbol: 'MON', 
+                decimals: 18 
+              },
               rpcUrls: [CONFIG.rpc],
               blockExplorerUrls: ['https://monadvision.com']
             }]
           });
-        } else throw e;
+        } else {
+          throw e;
+        }
       }
     }
+
+    // Connect MetaMask
     async function connectMetaMask() {
+      console.log('🔍 DEBUG: connectMetaMask() called');
+      
       try {
+        // Check 1: MetaMask installed?
         if (!window.ethereum) {
-          msg('❌ Please install MetaMask!', 'error');
+          console.log('❌ DEBUG: MetaMask not found');
+          msg('❌ Please install MetaMask browser extension!', 'error');
+          window.open('https://metamask.io/download/', '_blank');
           return;
         }
+        console.log('✅ DEBUG: MetaMask detected');
+
         msg('🦊 Connecting to MetaMask...', 'info');
-        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+        
+        // Check 2: Request accounts
+        console.log('🔍 DEBUG: Requesting accounts...');
+        const accounts = await window.ethereum.request({ 
+          method: 'eth_requestAccounts' 
+        });
+        console.log('✅ DEBUG: Accounts received:', accounts);
+        
         userAddr = accounts[0];
+        console.log('✅ DEBUG: User address:', userAddr);
+        
+        // Check 3: Switch to Monad
+        console.log('🔍 DEBUG: Switching to Monad network...');
         await switchToMonad();
+        console.log('✅ DEBUG: Network switched');
+        
+        // Check 4: Initialize Web3
+        console.log('🔍 DEBUG: Initializing Web3...');
         w3 = new Web3(window.ethereum);
         c = new w3.eth.Contract(ABI, CONFIG.addr);
+        console.log('✅ DEBUG: Web3 initialized');
+        
+        // Check 5: Get balance
+        console.log('🔍 DEBUG: Getting balance...');
         const bal = await w3.eth.getBalance(userAddr);
         const cid = await w3.eth.getChainId();
-        document.getElementById('userAddr').textContent = fmt(userAddr);
-        document.getElementById('userNet').textContent = cid == CONFIG.chainIdDec ? '✅ Monad' : `⚠️ Chain ${cid}`;
-        document.getElementById('userBal').textContent = `${parseFloat(w3.utils.fromWei(bal, 'ether')).toFixed(4)} MON`;
-        // Check if admin
-        const owner = await c.methods.owner().call();
-        if (owner.toLowerCase() === userAddr.toLowerCase()) {
-          document.getElementById('adminBadge').innerHTML = '<div class="admin-badge">⚡ ADMIN ACCESS ⚡</div>';
+        console.log('✅ DEBUG: Balance:', bal, 'Chain ID:', cid);
+        
+        document.getElementById('userAddr').textContent = formatAddress(userAddr);
+        document.getElementById('userNet').textContent = 
+          cid == CONFIG.chainIdDec ? '✅ Monad Mainnet' : `⚠️ Chain ${cid}`;
+        document.getElementById('userBal').textContent = 
+          `${parseFloat(w3.utils.fromWei(bal, 'ether')).toFixed(4)} MON`;
+        
+        // Check 6: Check if admin
+        console.log('🔍 DEBUG: Checking if admin...');
+        try {
+          const owner = await c.methods.owner().call();
+          console.log('✅ DEBUG: Contract owner:', owner);
+          if (owner.toLowerCase() === userAddr.toLowerCase()) {
+            document.getElementById('adminBadge').innerHTML = 
+              '<div class="admin-badge">⚡ ADMIN ACCESS ⚡</div>';
+            console.log('✅ DEBUG: User is admin!');
+          }
+        } catch (err) {
+          console.log('⚠️ DEBUG: Could not check admin status:', err.message);
         }
+        
         updateWalletStatus(true, 'MetaMask');
         document.getElementById('metamaskBtn').classList.add('connected');
-        document.getElementById('metamaskBtn').innerHTML = '<span style="font-size: 2.5em;">✅</span><span>Connected</span>';
-        msg('🎉 MetaMask connected!', 'success');
+        document.getElementById('metamaskBtn').innerHTML = 
+          '<span style="font-size: 2.5em;">✅</span><span>Connected</span>';
+        
+        msg('🎉 MetaMask connected successfully!', 'success');
+        console.log('✅ DEBUG: Connection complete!');
+        
+        // Event listeners
         window.ethereum.on('accountsChanged', (accounts) => {
-          if (accounts.length === 0) disconnect();
-          else location.reload();
+          console.log('🔍 DEBUG: Account changed:', accounts);
+          if (accounts.length === 0) {
+            disconnect();
+          } else {
+            location.reload();
+          }
         });
-        window.ethereum.on('chainChanged', () => location.reload());
+        
+        window.ethereum.on('chainChanged', (chainId) => {
+          console.log('🔍 DEBUG: Chain changed:', chainId);
+          location.reload();
+        });
+        
       } catch (e) {
-        msg('❌ ' + e.message, 'error');
+        console.error('❌ DEBUG: MetaMask Error:', e);
+        console.error('❌ DEBUG: Error details:', {
+          message: e.message,
+          code: e.code,
+          stack: e.stack
+        });
+        msg('❌ Connection failed: ' + (e.message || 'Unknown error'), 'error');
       }
     }
+
+    // Connect Web3Auth (placeholder)
     function connectWeb3Auth() {
-      msg('🔐 Web3Auth coming soon!', 'info');
+      msg('🔐 Web3Auth integration coming soon!', 'info');
     }
+
+    // Disconnect Wallet
     function disconnect() {
       userAddr = null;
       updateWalletStatus(false);
@@ -354,19 +693,24 @@
       document.getElementById('userBal').textContent = '-';
       document.getElementById('adminBadge').innerHTML = '';
       document.getElementById('metamaskBtn').classList.remove('connected');
-      document.getElementById('metamaskBtn').innerHTML = '<span style="font-size: 2.5em;">🦊</span><span>MetaMask</span>';
-      msg('Disconnected', 'info');
+      document.getElementById('metamaskBtn').innerHTML = 
+        '<span style="font-size: 2.5em;">🦊</span><span>MetaMask</span>';
+      msg('👋 Wallet disconnected', 'info');
     }
+
+    // Event Listeners
     document.getElementById('metamaskBtn').onclick = connectMetaMask;
     document.getElementById('web3authBtn').onclick = connectWeb3Auth;
     document.getElementById('disconnectBtn').onclick = disconnect;
     document.getElementById('refreshBtn').onclick = updateLCD;
-    // Auto-refresh
+
+    // Auto-refresh every 15 seconds
     setInterval(updateLCD, 15000);
+
+    // Initialize on page load
     window.addEventListener('DOMContentLoaded', () => {
       updateWalletStatus(false);
       updateLCD();
-      document.getElementById('rpc').textContent = CONFIG.rpc;
     });
   </script>
 </body>
