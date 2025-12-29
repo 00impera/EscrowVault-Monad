@@ -218,7 +218,6 @@
     // Fetch total fees from BlockVision API
     async function fetchTotalFees() {
       try {
-        // Example: You may need to adjust the API call depending on your endpoint's requirements
         const res = await fetch(BLOCKVISION_API, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -234,7 +233,6 @@
         });
         const data = await res.json();
         if (data && data.result) {
-          // result is hex string
           return formatEth(web3.utils.toBN(data.result));
         }
         return "0";
@@ -246,7 +244,7 @@
     async function updateLCD() {
       try {
         showMessage('Loading dashboard...', 'info');
-        const [feePercent, feeCollector, paused, owner, escrowCount, totalFees] = await Promise.all([
+        const [feePercent, feeCollector, paused, owner, escrowCount, totalFeesAPI] = await Promise.all([
           contract.methods.feePercent().call(),
           contract.methods.feeCollector().call(),
           contract.methods.paused().call(),
@@ -258,7 +256,7 @@
           <img src="https://brown-left-viper-691.mypinata.cloud/ipfs/bafybeiarjogrmlafa7t4tzyukv633iy4lf7nxtyqm6jzg2zpkweldfsiru" alt="DragonLock Logo" class="lcd-logo" />
           <div class="lcd-title">🐉 Dragon Escrow Vault - LIFE LCD 🐉</div>
           <div class="lcd-row"><span class="lcd-label">Platform Fee:</span> <span class="lcd-value">${(feePercent/100).toFixed(2)}%</span></div>
-          <div class="lcd-row"><span class="lcd-label">Total Fees (API):</span> <span class="lcd-totalfees">${totalFees} MON</span></div>
+          <div class="lcd-row"><span class="lcd-label">Total Fees (API):</span> <span class="lcd-totalfees">${totalFeesAPI} MON</span></div>
           <div class="lcd-row"><span class="lcd-label">Fee Collector:</span> <span class="lcd-value">${formatAddress(feeCollector)}</span></div>
           <div class="lcd-row"><span class="lcd-label">Status:</span> <span style="color:${paused ? '#ef4444' : '#00ffb3'};font-weight:bold;text-shadow:0 0 12px ${paused ? '#ef4444' : '#00ffb3'};">${paused ? '⛔ PAUSED' : '✅ ACTIVE'}</span></div>
           <div class="lcd-row"><span class="lcd-label">Owner:</span> <span class="lcd-value">${formatAddress(owner)}</span></div>
