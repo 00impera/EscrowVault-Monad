@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dragon Escrow Vault</title>
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/web3/4.3.0/web3.min.js"></script>
+  <style>
+    :root {
+      --life-green: #00ffb3;
+      --life-green-dark: #009e6e;
+      --cosmic-blue: #0f172a;
+      --cosmic-blue-light: #1e293b;
+      --glass: rgba(0,255,179,0.10);
+      --glass-border: rgba(0,255,179,0.18);
+      --digital-bg: linear-gradient(135deg, #0f172a 0%, #1e293b 60%, #0f172a 100%);
+      --digital-shadow: 0 8px 32px #00ffb3a0, 0 1.5px 8px #00ffb3a0;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Share Tech Mono', 'Courier New', monospace;
+      background: var(--digital-bg);
+      min-height: 100vh;
+      color: var(--life-green);
+      position: relative;
+      overflow-x: hidden;
+    }
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: 
+        radial-gradient(circle at 20% 50%, rgba(0,255,179,0.10) 0%, transparent 60%),
+        radial-gradient(circle at 80% 80%, rgba(0,255,179,0.08) 0%, transparent 60%),
+        url('https://www.transparenttextures.com/patterns/stardust.png');
+      pointer-events: none;
+      z-index: 0;
+      animation: cosmicShift 18s ease-in-out infinite;
+    }
+    @keyframes cosmicShift {
+      0%,100% { opacity: 1; }
+      50% { opacity: 0.8; }
+    }
+    .container {
+      max-width: 1200px;
+      margin: 40px auto 0 auto;
+      padding: 40px 24px;
+      position: relative;
+      z-index: 1;
+    }
+    .glass {
+      background: var(--glass);
+      border: 2px solid var(--glass-border);
+      box-shadow: var(--digital-shadow);
+      border-radius: 28px;
+      margin-bottom: 32px;
+      margin-top: 32px;
+      padding: 32px 32px 24px 32px;
+      backdrop-filter: blur(12px);
+    }
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      margin-bottom: 32px;
+      justify-content: space-between;
+      flex-wrap: wrap;
+    }
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+    }
+    .logo-img {
+      width: 80px;
+      height: 80px;
+      border-radius: 20px;
+      box-shadow: 0 0 32px #00ffb3a0;
+      background: #0f172a;
+      object-fit: cover;
+      border: 2px solid var(--life-green);
+    }
+    .header-title {
+      font-size: 2.5em;
+      font-weight: 900;
+      background: linear-gradient(135deg, #00ffb3, #00ffb3 60%, #1e293b 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      letter-spacing: -2px;
+      text-shadow: 0 0 16px #00ffb3cc;
+    }
+    .header-desc {
+      color: #baffd9;
+      font-size: 1.1em;
+      margin-top: 6px;
+      text-shadow: 0 0 8px #00ffb3a0;
+    }
+    .wallet-section {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      align-items: flex-end;
+    }
+    .wallet-btn {
+      background: #00ffb3;
+      color: #0f172a;
+      border: none;
+      border-radius: 8px;
+      padding: 12px 24px;
+      font-size: 1em;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
+      box-shadow: 0 0 16px #00ffb3a0;
+      transition: all 0.2s;
+    }
+    .wallet-btn:hover { background: #009e6e; color: #fff; }
+    .wallet-address {
+      color: #baffd9;
+      font-size: 0.9em;
+    }
+    /* ... rest of your CSS remains unchanged ... */
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="header-left">
+        <img src="https://brown-left-viper-691.mypinata.cloud/ipfs/bafybeiarjogrmlafa7t4tzyukv633iy4lf7nxtyqm6jzg2zpkweldfsiru" alt="DragonLock Logo" class="logo-img" />
+        <div>
+          <div class="header-title">Dragon Escrow Vault</div>
+          <div class="header-desc">Secure, digital, cosmic-green escrow for Monad</div>
+        </div>
+      </div>
+      <div class="wallet-section">
+        <button class="wallet-btn" id="connectBtn">Connect Wallet</button>
+        <div class="wallet-address" id="walletAddress"></div>
+      </div>
+    </div>
+    <div id="messages"></div>
+    <div id="main"></div>
+  </div>
+  <script>
+    // ---- CONTRACT CONFIG ----
+    const CONTRACT_ADDRESS = "0x39B0A759C18B50ab4126a94dF1B86947BB51a6e4";
+    const MONAD_CHAIN_ID = "0x8F"; // 143 in hex
+    const MONAD_RPC = "https://monad-mainnet.g.alchemy.com/v2/Uwb7T0DbXMQHjiJBNf9_b005qYjLmJqk";
+    // ... rest of your JS remains unchanged ...
+  </script>
+</body>
+</html>
