@@ -121,7 +121,41 @@
       color: #baffd9;
       font-size: 0.9em;
     }
-    /* ... rest of your CSS remains unchanged ... */
+    .message {
+      padding: 12px 18px;
+      border-radius: 12px;
+      margin: 18px 0;
+      font-family: inherit;
+      font-size: 1em;
+    }
+    .error-message {
+      background: linear-gradient(135deg, #ef4444, #dc2626);
+      color: #fff;
+    }
+    .success-message {
+      background: linear-gradient(135deg, #00ffb3, #009e6e);
+      color: #0f172a;
+      font-weight: 700;
+    }
+    .info-message {
+      background: #00ffb333;
+      color: #00ffb3;
+      border: 2px solid #00ffb3;
+    }
+    .loading {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 3px solid #00ffb3;
+      border-top-color: transparent;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin-left: 8px;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    /* Add your .action-btn, .form-btn, .form-input, .form-group, .form-label, .form-textarea, .escrow-card, .escrow-detail-row styles as needed */
   </style>
 </head>
 <body>
@@ -147,7 +181,415 @@
     const CONTRACT_ADDRESS = "0x39B0A759C18B50ab4126a94dF1B86947BB51a6e4";
     const MONAD_CHAIN_ID = "0x8F"; // 143 in hex
     const MONAD_RPC = "https://monad-mainnet.g.alchemy.com/v2/Uwb7T0DbXMQHjiJBNf9_b005qYjLmJqk";
-    // ... rest of your JS remains unchanged ...
+    const CONTRACT_ABI = /* PASTE YOUR ABI HERE (as in your message) */;
+
+    const OWNER_ADDRESS = "0x592B35c8917eD36c39Ef73D0F5e92B0173560b2e";
+
+    let web3, contract, userAddress;
+    let escrows = [];
+    let selectedEscrow = null;
+    let filter = "All";
+    let isLoading = false;
+
+    const STATE_LABELS = ["Created", "Delivered", "Disputed", "Completed", "Refunded"];
+
+    // ---- UTILITY FUNCTIONS ----
+    function showMessage(text, type = 'info') {
+      const div = document.getElementById('messages');
+      const msg = document.createElement('div');
+      msg.className = `message ${type}-message`;
+      msg.textContent = text;
+      div.appendChild(msg);
+      setTimeout(() => msg.remove(), 5000);
+    }
+
+    function formatAddress(addr) {
+      if (!addr) return '';
+      return `${addr.slice(0, 6)}...${addr.slice(-4)}`;
+    }
+
+    function formatEth(wei) {
+      return web3.utils.fromWei(wei.toString(), 'ether');
+    }
+
+    // ---- WALLET CONNECTION ----
+    document.getElementById('connectBtn').onclick = connectWallet;
+
+    async function connectWallet() {
+      try {
+        if (!window.ethereum) {
+          showMessage('Please install MetaMask!', 'error');
+          return;
+        }
+
+        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+        userAddress = accounts[0];
+
+        // Switch to Monad network
+        try {
+          await window.ethereum.request({
+            method: 'wallet_switchEthereumChain',
+            params: [{ chainId: MONAD_CHAIN_ID }],
+          });
+        } catch (switchError) {
+          if (switchError.code === 4902) {
+            try {
+              await window.ethereum.request({
+                method: 'wallet_addEthereumChain',
+                params: [{
+                  chainId: MONAD_CHAIN_ID,
+                  chainName: 'Monad Mainnet',
+                  nativeCurrency: { name: 'MON', symbol: 'MON', decimals: 18 },
+                  rpcUrls: [MONAD_RPC],
+                  blockExplorerUrls: ['https://monad-explorer.io/']
+                }]
+              });
+            } catch (addError) {
+              showMessage('Failed to add Monad network', 'error');
+              return;
+            }
+          }
+        }
+
+        web3 = new Web3(window.ethereum);
+        contract = new web3.eth.Contract(CONTRACT_ABI, CONTRACT_ADDRESS);
+
+        document.getElementById('connectBtn').textContent = 'Connected';
+        document.getElementById('walletAddress').textContent = formatAddress(userAddress);
+
+        showMessage('Wallet connected successfully!', 'success');
+        await loadEscrows();
+        render();
+
+        // Listen for account changes
+        window.ethereum.on('accountsChanged', (accounts) => {
+          if (accounts.length === 0) {
+            userAddress = null;
+            showMessage('Wallet disconnected', 'info');
+          } else {
+            userAddress = accounts[0];
+            document.getElementById('walletAddress').textContent = formatAddress(userAddress);
+            loadEscrows();
+          }
+          render();
+        });
+
+      } catch (error) {
+        console.error(error);
+        showMessage('Failed to connect wallet: ' + error.message, 'error');
+      }
+    }
+
+    // ---- CONTRACT INTERACTIONS ----
+    async function loadEscrows() {
+      if (!contract || !userAddress) return;
+      try {
+        isLoading = true;
+        render();
+        const userEscrowIds = await contract.methods.getUserEscrows(userAddress).call();
+        escrows = [];
+        for (let id of userEscrowIds) {
+          const escrow = await contract.methods.getEscrow(id).call();
+          escrows.push({
+            id: id.toString(),
+            buyer: escrow.buyer,
+            seller: escrow.seller,
+            arbiter: escrow.arbiter,
+            amount: escrow.amount,
+            state: parseInt(escrow.state),
+            createdAt: escrow.createdAt,
+            description: escrow.description
+          });
+        }
+        isLoading = false;
+        render();
+      } catch (error) {
+        console.error(error);
+        showMessage('Failed to load escrows: ' + error.message, 'error');
+        isLoading = false;
+      }
+    }
+
+    // ---- ADMIN PANEL ----
+    async function renderAdminPanel() {
+      if (!contract || !userAddress) return "";
+      const owner = await contract.methods.owner().call();
+      if (owner.toLowerCase() !== userAddress.toLowerCase()) return "";
+
+      // Get stats
+      const totalFees = await contract.methods.totalFeesCollected().call();
+      const feePercent = await contract.methods.feePercent().call();
+      const feeCollector = await contract.methods.feeCollector().call();
+      const paused = await contract.methods.paused().call();
+
+      return `
+        <div class="glass" style="margin-top:32px;">
+          <h2>🛡️ Admin Panel</h2>
+          <div class="escrow-detail-row"><strong>Total Fees Collected:</strong> <span>${formatEth(totalFees)} MON</span></div>
+          <div class="escrow-detail-row"><strong>Platform Fee:</strong> <span>${feePercent / 100}%</span></div>
+          <div class="escrow-detail-row"><strong>Fee Collector:</strong> <span>${formatAddress(feeCollector)}</span></div>
+          <div class="escrow-detail-row"><strong>Paused:</strong> <span>${paused ? "Yes" : "No"}</span></div>
+          <div style="margin-top:18px;">
+            <button class="action-btn" onclick="showUpdateFeeForm()">Update Fee %</button>
+            <button class="action-btn" onclick="showUpdateCollectorForm()">Update Collector</button>
+            <button class="action-btn" onclick="pauseContract()" ${paused ? "disabled" : ""}>Pause</button>
+            <button class="action-btn" onclick="unpauseContract()" ${!paused ? "disabled" : ""}>Unpause</button>
+            <button class="action-btn" onclick="emergencyWithdraw()">Withdraw All Profits</button>
+          </div>
+        </div>
+      `;
+    }
+
+    window.showUpdateFeeForm = function () {
+      const main = document.getElementById("main");
+      main.innerHTML = `
+        <div class="glass">
+          <h2>Update Platform Fee (%)</h2>
+          <form id="updateFeeForm">
+            <input class="form-input" id="newFee" type="number" min="0" max="10" step="0.01" required placeholder="New fee % (max 10)">
+            <button class="form-btn" type="submit">Update</button>
+            <button class="form-btn" type="button" onclick="render()" style="background:#222;color:#00ffb3;">Cancel</button>
+          </form>
+        </div>
+      `;
+      document.getElementById("updateFeeForm").onsubmit = async function (e) {
+        e.preventDefault();
+        try {
+          const newFee = parseFloat(document.getElementById("newFee").value);
+          if (isNaN(newFee) || newFee < 0 || newFee > 10) {
+            showMessage("Fee must be between 0 and 10%", "error");
+            return;
+          }
+          await contract.methods
+            .updateFeePercent(Math.round(newFee * 100))
+            .send({ from: userAddress });
+          showMessage("Fee updated!", "success");
+          render();
+        } catch (err) {
+          showMessage("Failed: " + err.message, "error");
+        }
+      };
+    };
+
+    window.showUpdateCollectorForm = function () {
+      const main = document.getElementById("main");
+      main.innerHTML = `
+        <div class="glass">
+          <h2>Update Fee Collector</h2>
+          <form id="updateCollectorForm">
+            <input class="form-input" id="newCollector" required placeholder="New collector address">
+            <button class="form-btn" type="submit">Update</button>
+            <button class="form-btn" type="button" onclick="render()" style="background:#222;color:#00ffb3;">Cancel</button>
+          </form>
+        </div>
+      `;
+      document.getElementById("updateCollectorForm").onsubmit = async function (e) {
+        e.preventDefault();
+        try {
+          const newCollector = document.getElementById("newCollector").value;
+          await contract.methods
+            .updateFeeCollector(newCollector)
+            .send({ from: userAddress });
+          showMessage("Collector updated!", "success");
+          render();
+        } catch (err) {
+          showMessage("Failed: " + err.message, "error");
+        }
+      };
+    };
+
+    window.pauseContract = async function () {
+      try {
+        await contract.methods.pause().send({ from: userAddress });
+        showMessage("Contract paused!", "success");
+        render();
+      } catch (err) {
+        showMessage("Failed: " + err.message, "error");
+      }
+    };
+    window.unpauseContract = async function () {
+      try {
+        await contract.methods.unpause().send({ from: userAddress });
+        showMessage("Contract unpaused!", "success");
+        render();
+      } catch (err) {
+        showMessage("Failed: " + err.message, "error");
+      }
+    };
+    window.emergencyWithdraw = async function () {
+      try {
+        await contract.methods.emergencyWithdraw().send({ from: userAddress });
+        showMessage("All profits withdrawn to your wallet!", "success");
+        render();
+      } catch (err) {
+        showMessage("Failed: " + err.message, "error");
+      }
+    };
+
+    // ---- RENDER DASHBOARD ----
+    async function render() {
+      const main = document.getElementById('main');
+      if (!userAddress) {
+        main.innerHTML = `<div class="glass" style="text-align:center;">Connect your wallet to view and manage escrows.</div>`;
+        return;
+      }
+      if (isLoading) {
+        main.innerHTML = `<div class="glass" style="text-align:center;">Loading... <span class="loading"></span></div>`;
+        return;
+      }
+      // Dashboard, create form, escrow list, etc.
+      let html = `
+        <div class="glass">
+          <h2 style="margin-bottom:18px;">Your Escrows</h2>
+          <button class="wallet-btn" onclick="showCreateEscrowForm()">+ Create Escrow</button>
+          <div style="margin:18px 0;">
+            ${escrows.length === 0 ? '<div>No escrows found.</div>' : escrows.map(e => `
+              <div class="escrow-card" onclick="showEscrowDetail('${e.id}')">
+                <span class="escrow-id">#${e.id}</span>
+                <span class="escrow-state">${STATE_LABELS[e.state]}</span>
+                <span class="escrow-amount">${formatEth(e.amount)} MON</span>
+                <div style="color:#baffd9;font-size:0.95em;">${e.description}</div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+      // Add admin panel if owner
+      if (contract && userAddress) {
+        html += await renderAdminPanel();
+      }
+      main.innerHTML = html;
+    }
+
+    // ---- CREATE ESCROW FORM ----
+    window.showCreateEscrowForm = function() {
+      const main = document.getElementById('main');
+      main.innerHTML = `
+        <div class="glass">
+          <h2>Create New Escrow</h2>
+          <form id="createEscrowForm">
+            <div class="form-group">
+              <label class="form-label">Seller Address</label>
+              <input class="form-input" id="seller" required placeholder="0x...">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Arbiter Address</label>
+              <input class="form-input" id="arbiter" required placeholder="0x...">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Amount (MON)</label>
+              <input class="form-input" id="amount" type="number" min="0.001" step="0.001" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Description</label>
+              <textarea class="form-textarea" id="desc" required></textarea>
+            </div>
+            <button class="form-btn" type="submit">Create & Deposit</button>
+            <button class="form-btn" type="button" onclick="render()" style="background:#222;color:#00ffb3;">Cancel</button>
+          </form>
+        </div>
+      `;
+      document.getElementById('createEscrowForm').onsubmit = async function(e) {
+        e.preventDefault();
+        try {
+          const seller = document.getElementById('seller').value;
+          const arbiter = document.getElementById('arbiter').value;
+          const amount = document.getElementById('amount').value;
+          const desc = document.getElementById('desc').value;
+          showMessage('Creating escrow...', 'info');
+          await contract.methods.createEscrow(seller, arbiter, desc)
+            .send({ from: userAddress, value: web3.utils.toWei(amount, 'ether') });
+          showMessage('Escrow created!', 'success');
+          await loadEscrows();
+        } catch (err) {
+          showMessage('Failed to create escrow: ' + err.message, 'error');
+        }
+      };
+    };
+
+    // ---- ESCROW DETAIL ----
+    window.showEscrowDetail = async function(id) {
+      const e = escrows.find(x => x.id === id);
+      if (!e) return;
+      const main = document.getElementById('main');
+      main.innerHTML = `
+        <div class="glass">
+          <button class="wallet-btn" onclick="render()" style="margin-bottom:18px;background:#222;color:#00ffb3;">← Back</button>
+          <h2>Escrow #${e.id}</h2>
+          <div class="escrow-detail-row"><strong>Buyer:</strong> <span>${formatAddress(e.buyer)}</span></div>
+          <div class="escrow-detail-row"><strong>Seller:</strong> <span>${formatAddress(e.seller)}</span></div>
+          <div class="escrow-detail-row"><strong>Arbiter:</strong> <span>${formatAddress(e.arbiter)}</span></div>
+          <div class="escrow-detail-row"><strong>Amount:</strong> <span>${formatEth(e.amount)} MON</span></div>
+          <div class="escrow-detail-row"><strong>State:</strong> <span>${STATE_LABELS[e.state]}</span></div>
+          <div class="escrow-detail-row"><strong>Description:</strong> <span>${e.description}</span></div>
+          <div class="escrow-detail-row"><strong>Created:</strong> <span>${new Date(e.createdAt*1000).toLocaleString()}</span></div>
+          <div class="escrow-actions" style="margin-top:24px;">
+            ${renderEscrowActions(e)}
+          </div>
+        </div>
+      `;
+    };
+
+    function renderEscrowActions(e) {
+      let html = '';
+      if (userAddress && e.buyer.toLowerCase() === userAddress.toLowerCase() && e.state === 0) {
+        html += `<button class="action-btn" onclick="confirmDelivery('${e.id}')">Confirm Delivery</button>`;
+        html += `<button class="action-btn" onclick="requestRefund('${e.id}')">Request Refund</button>`;
+      }
+      if (userAddress && e.seller.toLowerCase() === userAddress.toLowerCase() && e.state === 2) {
+        html += `<button class="action-btn" onclick="approveRefund('${e.id}')">Approve Refund</button>`;
+      }
+      if (userAddress && e.arbiter.toLowerCase() === userAddress.toLowerCase() && e.state === 2) {
+        html += `<button class="action-btn" onclick="resolveDispute('${e.id}', true)">Release to Buyer</button>`;
+        html += `<button class="action-btn" onclick="resolveDispute('${e.id}', false)">Release to Seller</button>`;
+      }
+      if (!html) html = `<span style="color:#baffd9;">No actions available.</span>`;
+      return html;
+    }
+
+    window.confirmDelivery = async function(id) {
+      try {
+        showMessage('Confirming delivery...', 'info');
+        await contract.methods.confirmDelivery(id).send({ from: userAddress });
+        showMessage('Delivery confirmed!', 'success');
+        await loadEscrows();
+      } catch (err) {
+        showMessage('Failed: ' + err.message, 'error');
+      }
+    };
+    window.requestRefund = async function(id) {
+      try {
+        showMessage('Requesting refund...', 'info');
+        await contract.methods.requestRefund(id).send({ from: userAddress });
+        showMessage('Refund requested!', 'success');
+        await loadEscrows();
+      } catch (err) {
+        showMessage('Failed: ' + err.message, 'error');
+      }
+    };
+    window.approveRefund = async function(id) {
+      try {
+        showMessage('Approving refund...', 'info');
+        await contract.methods.approveRefund(id).send({ from: userAddress });
+        showMessage('Refund approved!', 'success');
+        await loadEscrows();
+      } catch (err) {
+        showMessage('Failed: ' + err.message, 'error');
+      }
+    };
+    window.resolveDispute = async function(id, toBuyer) {
+      try {
+        showMessage('Resolving dispute...', 'info');
+        await contract.methods.resolveDispute(id, toBuyer).send({ from: userAddress });
+        showMessage('Dispute resolved!', 'success');
+        await loadEscrows();
+      } catch (err) {
+        showMessage('Failed: ' + err.message, 'error');
+      }
+    };
+
+    // ---- INITIAL RENDER ----
+    render();
   </script>
 </body>
 </html>
