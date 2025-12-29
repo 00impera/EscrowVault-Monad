@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Dragon Escrow Vault Dashboard</title>
+  <title>Dragon Escrow Vault - Login</title>
   <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/web3/4.3.0/web3.min.js"></script>
   <style>
@@ -15,9 +15,11 @@
       --glass: rgba(0,255,179,0.10);
       --glass-border: rgba(0,255,179,0.18);
       --gold: #ffd700;
-      --gold-dark: #bfa100;
       --digital-bg: linear-gradient(135deg, #0f172a 0%, #1e293b 60%, #0f172a 100%);
       --digital-shadow: 0 8px 32px #ffd70040, 0 1.5px 8px #00ffb3a0;
+      --lcd-bg: linear-gradient(135deg, #0f172a 60%, #00ffb3 100%);
+      --lcd-border: 2.5px solid #00ffb3;
+      --lcd-shadow: 0 0 24px #00ffb3a0, 0 0 4px #00ffb3a0;
     }
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
@@ -33,8 +35,8 @@
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
       background: 
-        radial-gradient(circle at 20% 50%, rgba(255,215,0,0.10) 0%, transparent 60%),
-        radial-gradient(circle at 80% 80%, rgba(0,255,179,0.08) 0%, transparent 60%),
+        radial-gradient(circle at 20% 50%, rgba(0,255,179,0.10) 0%, transparent 60%),
+        radial-gradient(circle at 80% 80%, rgba(255,215,0,0.08) 0%, transparent 60%),
         url('https://www.transparenttextures.com/patterns/stardust.png');
       pointer-events: none;
       z-index: 0;
@@ -45,8 +47,8 @@
       50% { opacity: 0.8; }
     }
     .container {
-      max-width: 700px;
-      margin: 40px auto 0 auto;
+      max-width: 480px;
+      margin: 60px auto 0 auto;
       padding: 40px 24px;
       position: relative;
       z-index: 1;
@@ -56,73 +58,93 @@
       border: 2px solid var(--glass-border);
       box-shadow: var(--digital-shadow);
       border-radius: 28px;
-      margin-bottom: 32px;
-      margin-top: 32px;
-      padding: 32px 32px 24px 32px;
+      padding: 40px 32px;
       backdrop-filter: blur(12px);
     }
-    .header {
-      display: flex;
-      align-items: center;
-      gap: 24px;
+    .logo-container {
+      text-align: center;
       margin-bottom: 32px;
-      justify-content: space-between;
-      flex-wrap: wrap;
-    }
-    .header-left {
-      display: flex;
-      align-items: center;
-      gap: 24px;
     }
     .logo-img {
-      width: 80px;
-      height: 80px;
+      width: 100px;
+      height: 100px;
       border-radius: 20px;
-      box-shadow: 0 0 32px #ffd700a0;
+      box-shadow: 0 0 40px #ffd700a0;
       background: #0f172a;
       object-fit: cover;
       border: 2px solid var(--gold);
+      margin-bottom: 16px;
     }
     .header-title {
-      font-size: 2.2em;
+      font-size: 2em;
       font-weight: 900;
-      background: linear-gradient(135deg, #ffd700, #00ffb3 60%, #1e293b 100%);
+      background: linear-gradient(135deg, #ffd700, #00ffb3);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
-      letter-spacing: -2px;
-      text-shadow: 0 0 16px #ffd700cc;
+      letter-spacing: -1px;
+      margin-bottom: 8px;
     }
     .header-desc {
       color: #ffe066;
-      font-size: 1.1em;
-      margin-top: 6px;
-      text-shadow: 0 0 8px #ffd700a0;
+      font-size: 0.95em;
+    }
+    .lcd-display {
+      background: var(--lcd-bg);
+      border: var(--lcd-border);
+      box-shadow: var(--lcd-shadow);
+      border-radius: 18px;
+      padding: 18px 18px 10px 18px;
+      margin-bottom: 28px;
+      margin-top: 10px;
+      color: var(--life-green);
+      font-size: 1.08em;
+      font-family: 'Share Tech Mono', monospace;
+      text-shadow: 0 0 8px #00ffb3a0;
+      letter-spacing: 1px;
+      min-height: 60px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      align-items: flex-start;
+      justify-content: center;
+      opacity: 0.98;
+      transition: background 0.3s;
+    }
+    .lcd-label {
+      color: #baffd9;
+      font-size: 0.98em;
+      margin-right: 8px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
     }
     .wallet-section {
       display: flex;
       flex-direction: column;
       gap: 8px;
-      align-items: flex-end;
+      align-items: center;
+      margin-top: 24px;
     }
     .wallet-btn {
       background: linear-gradient(90deg, #ffd700 60%, #00ffb3 100%);
       color: #0f172a;
       border: none;
-      border-radius: 8px;
-      padding: 12px 24px;
-      font-size: 1em;
+      border-radius: 10px;
+      padding: 14px 32px;
+      font-size: 1.1em;
       font-weight: 700;
       cursor: pointer;
       font-family: inherit;
       box-shadow: 0 0 16px #ffd700a0;
       transition: all 0.2s;
       margin-bottom: 8px;
+      width: 100%;
     }
-    .wallet-btn:hover { background: #bfa100; color: #fff; }
+    .wallet-btn:hover { background: #009e6e; color: #fff; }
     .wallet-address {
-      color: #ffe066;
+      color: #baffd9;
       font-size: 0.95em;
+      margin-top: 4px;
     }
     .admin-badge {
       display: inline-block;
@@ -138,9 +160,9 @@
     .message {
       padding: 12px 18px;
       border-radius: 12px;
-      margin: 18px 0;
-      font-family: inherit;
-      font-size: 1em;
+      margin: 16px 0;
+      font-size: 0.95em;
+      text-align: center;
     }
     .error-message {
       background: linear-gradient(135deg, #ef4444, #dc2626);
@@ -160,7 +182,7 @@
       display: inline-block;
       width: 16px;
       height: 16px;
-      border: 3px solid #ffd700;
+      border: 3px solid currentColor;
       border-top-color: transparent;
       border-radius: 50%;
       animation: spin 0.8s linear infinite;
@@ -174,19 +196,20 @@
 <body>
   <div class="container">
     <div class="glass">
-      <div class="header">
+      <div class="logo-container">
         <img src="https://brown-left-viper-691.mypinata.cloud/ipfs/bafybeiarjogrmlafa7t4tzyukv633iy4lf7nxtyqm6jzg2zpkweldfsiru" alt="DragonLock Logo" class="logo-img" />
-        <div>
-          <div class="header-title">Dragon Escrow Vault</div>
-          <div class="header-desc">Secure, digital, cosmic-gold escrow for Monad</div>
-        </div>
+        <div class="header-title">Dragon Escrow</div>
+        <div class="header-desc">Secure Login Portal</div>
       </div>
+      <div id="lcd" class="lcd-display">
+        <span style="color:#baffd9;">Loading contract stats...</span>
+      </div>
+      <div id="messages"></div>
       <div class="wallet-section">
-        <button class="wallet-btn" id="connectBtn">Connect Wallet</button>
+        <button class="wallet-btn" id="walletBtn">Connect MetaMask Wallet</button>
         <div class="wallet-address" id="walletAddress"></div>
         <div id="adminBadge"></div>
       </div>
-      <div id="messages"></div>
     </div>
   </div>
   <script>
@@ -194,104 +217,21 @@
     const CONTRACT_ADDRESS = "0x39B0A759C18B50ab4126a94dF1B86947BB51a6e4";
     const MONAD_CHAIN_ID = "0x8F"; // 143 in hex
     const MONAD_RPC = "https://rpc.monad.xyz";
-    const CONTRACT_ABI = [
-      {
-        "inputs": [],
-        "stateMutability": "nonpayable",
-        "type": "constructor"
-      },
-      {
-        "anonymous": false,
-        "inputs": [
-          { "indexed": true, "internalType": "uint256", "name": "escrowId", "type": "uint256" }
-        ],
-        "name": "EscrowCancelled",
-        "type": "event"
-      },
-      {
-        "anonymous": false,
-        "inputs": [
-          { "indexed": true, "internalType": "uint256", "name": "escrowId", "type": "uint256" },
-          { "indexed": true, "internalType": "address", "name": "buyer", "type": "address" },
-          { "indexed": true, "internalType": "address", "name": "seller", "type": "address" },
-          { "indexed": false, "internalType": "uint256", "name": "amount", "type": "uint256" }
-        ],
-        "name": "EscrowCreated",
-        "type": "event"
-      },
-      {
-        "anonymous": false,
-        "inputs": [
-          { "indexed": true, "internalType": "uint256", "name": "escrowId", "type": "uint256" }
-        ],
-        "name": "EscrowReleased",
-        "type": "event"
-      },
-      {
-        "inputs": [
-          { "internalType": "uint256", "name": "_escrowId", "type": "uint256" }
-        ],
-        "name": "cancelEscrow",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-      },
-      {
-        "inputs": [
-          { "internalType": "address", "name": "_seller", "type": "address" }
-        ],
-        "name": "createEscrow",
-        "outputs": [],
-        "stateMutability": "payable",
-        "type": "function"
-      },
-      {
-        "inputs": [
-          { "internalType": "uint256", "name": "", "type": "uint256" }
-        ],
-        "name": "escrows",
-        "outputs": [
-          { "internalType": "address", "name": "buyer", "type": "address" },
-          { "internalType": "address", "name": "seller", "type": "address" },
-          { "internalType": "uint256", "name": "amount", "type": "uint256" },
-          { "internalType": "bool", "name": "isActive", "type": "bool" }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-      },
-      {
-        "inputs": [],
-        "name": "owner",
-        "outputs": [
-          { "internalType": "address", "name": "", "type": "address" }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-      },
-      {
-        "inputs": [
-          { "internalType": "uint256", "name": "_escrowId", "type": "uint256" }
-        ],
-        "name": "releaseEscrow",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-      }
-    ];
+    const CONTRACT_ABI = [/* PASTE YOUR FULL ABI HERE (from your message) */];
     const OWNER_ADDRESS = "0x592B35c8917eD36c39Ef73D0F5e92B0173560b2e";
 
-    // ---- SAFE WEB3 INIT ----
     let web3 = new Web3(MONAD_RPC); // fallback for read-only
     let contract = new web3.eth.Contract(CONTRACT_ABI, CONTRACT_ADDRESS);
     let userAddress = null;
 
     function showMessage(text, type = 'info') {
       const div = document.getElementById('messages');
+      div.innerHTML = '';
       const msg = document.createElement('div');
       msg.className = `message ${type}-message`;
       msg.textContent = text;
       div.appendChild(msg);
-      setTimeout(() => msg.remove(), 5000);
+      if (type !== 'info') setTimeout(() => msg.remove(), 5000);
     }
     function formatAddress(addr) {
       if (!addr) return '';
@@ -302,18 +242,37 @@
       return web3.utils.fromWei(wei.toString(), 'ether');
     }
 
-    document.getElementById('connectBtn').onclick = connectWallet;
+    // LCD Display: fetch and show contract stats
+    async function updateLCD() {
+      try {
+        const feePercent = await contract.methods.feePercent().call();
+        const totalFees = await contract.methods.totalFeesCollected().call();
+        const feeCollector = await contract.methods.feeCollector().call();
+        const paused = await contract.methods.paused().call();
+        const owner = await contract.methods.owner().call();
+
+        document.getElementById('lcd').innerHTML = `
+          <div><span class="lcd-label">Platform Fee:</span> ${(feePercent/100).toFixed(2)}%</div>
+          <div><span class="lcd-label">Total Fees Collected:</span> ${formatEth(totalFees)} MON</div>
+          <div><span class="lcd-label">Fee Collector:</span> ${formatAddress(feeCollector)}</div>
+          <div><span class="lcd-label">Paused:</span> <span style="color:${paused ? '#ef4444' : '#00ffb3'}">${paused ? 'YES' : 'NO'}</span></div>
+          <div><span class="lcd-label">Owner:</span> ${formatAddress(owner)}</div>
+        `;
+      } catch (err) {
+        document.getElementById('lcd').innerHTML = `<span style="color:#ef4444;">Failed to load contract stats</span>`;
+      }
+    }
+
+    // Wallet connect logic
+    document.getElementById('walletBtn').onclick = connectWallet;
 
     async function connectWallet() {
       try {
         if (!window.ethereum) {
-          showMessage('Please install MetaMask or another Web3 wallet!', 'error');
+          showMessage('Please install MetaMask!', 'error');
           return;
         }
-
         showMessage('Requesting wallet connection...', 'info');
-
-        // Request account access
         const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
         userAddress = accounts[0];
 
@@ -323,25 +282,18 @@
             method: 'wallet_switchEthereumChain',
             params: [{ chainId: MONAD_CHAIN_ID }],
           });
-          showMessage('Switched to Monad Mainnet', 'success');
         } catch (switchError) {
           if (switchError.code === 4902) {
-            try {
-              await window.ethereum.request({
-                method: 'wallet_addEthereumChain',
-                params: [{
-                  chainId: MONAD_CHAIN_ID,
-                  chainName: 'Monad Mainnet',
-                  nativeCurrency: { name: 'Monad', symbol: 'MON', decimals: 18 },
-                  rpcUrls: [MONAD_RPC],
-                  blockExplorerUrls: ['https://monadvision.com']
-                }]
-              });
-              showMessage('Monad network added successfully!', 'success');
-            } catch (addError) {
-              showMessage('Failed to add Monad network: ' + addError.message, 'error');
-              return;
-            }
+            await window.ethereum.request({
+              method: 'wallet_addEthereumChain',
+              params: [{
+                chainId: MONAD_CHAIN_ID,
+                chainName: 'Monad Mainnet',
+                nativeCurrency: { name: 'Monad', symbol: 'MON', decimals: 18 },
+                rpcUrls: [MONAD_RPC],
+                blockExplorerUrls: ['https://monadvision.com']
+              }]
+            });
           } else {
             showMessage('Failed to switch network: ' + switchError.message, 'error');
             return;
@@ -352,24 +304,19 @@
         web3 = new Web3(window.ethereum);
         contract = new web3.eth.Contract(CONTRACT_ABI, CONTRACT_ADDRESS);
 
-        // Update UI
-        document.getElementById('connectBtn').textContent = 'Connected ✓';
-        document.getElementById('connectBtn').style.background = 'linear-gradient(90deg, #00ffb3, #ffd700)';
+        document.getElementById('walletBtn').textContent = 'Connected ✓';
+        document.getElementById('walletBtn').style.background = 'linear-gradient(90deg, #00ffb3, #ffd700)';
         document.getElementById('walletAddress').textContent = formatAddress(userAddress);
 
         // Check if admin
-        try {
-          const owner = await contract.methods.owner().call();
-          if (owner.toLowerCase() === userAddress.toLowerCase()) {
-            document.getElementById('adminBadge').innerHTML = '<span class="admin-badge">Admin (Trezor)</span>';
-          } else {
-            document.getElementById('adminBadge').innerHTML = '';
-          }
-        } catch (err) {
-          // ignore
+        const owner = await contract.methods.owner().call();
+        if (owner.toLowerCase() === userAddress.toLowerCase()) {
+          document.getElementById('adminBadge').innerHTML = '<span class="admin-badge">Admin (Trezor)</span>';
+        } else {
+          document.getElementById('adminBadge').innerHTML = '';
         }
 
-        showMessage('Wallet connected successfully! Redirecting...', 'success');
+        showMessage('Wallet connected! Redirecting...', 'success');
         setTimeout(() => {
           window.location.href = "dashboard.html";
         }, 1500);
@@ -378,8 +325,8 @@
         window.ethereum.on('accountsChanged', (accounts) => {
           if (accounts.length === 0) {
             userAddress = null;
-            document.getElementById('connectBtn').textContent = 'Connect Wallet';
-            document.getElementById('connectBtn').style.background = 'linear-gradient(90deg, #ffd700 60%, #00ffb3 100%)';
+            document.getElementById('walletBtn').textContent = 'Connect MetaMask Wallet';
+            document.getElementById('walletBtn').style.background = 'linear-gradient(90deg, #ffd700 60%, #00ffb3 100%)';
             document.getElementById('walletAddress').textContent = '';
             document.getElementById('adminBadge').innerHTML = '';
             showMessage('Wallet disconnected', 'info');
@@ -398,19 +345,8 @@
       }
     }
 
-    // Optional: Auto-detect if already connected
-    window.addEventListener('load', async () => {
-      if (window.ethereum) {
-        try {
-          const accounts = await window.ethereum.request({ method: 'eth_accounts' });
-          if (accounts.length > 0) {
-            // Optionally auto-connect if already authorized
-          }
-        } catch (err) {
-          // ignore
-        }
-      }
-    });
+    // On load, update LCD
+    window.addEventListener('DOMContentLoaded', updateLCD);
   </script>
 </body>
 </html>
