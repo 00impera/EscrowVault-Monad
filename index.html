@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Dragon Escrow Vault - Login</title>
+  <title>Dragon Escrow Vault - LCD Dashboard</title>
   <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/web3/4.3.0/web3.min.js"></script>
   <style>
@@ -48,78 +48,42 @@
       50% { opacity: 0.8; }
     }
     .container {
-      max-width: 600px;
+      max-width: 700px;
       margin: 60px auto 0 auto;
       padding: 40px 24px;
       position: relative;
       z-index: 1;
     }
-    .glass {
-      background: var(--glass);
-      border: 2px solid var(--glass-border);
-      box-shadow: var(--digital-shadow);
-      border-radius: 28px;
-      padding: 40px 32px;
-      backdrop-filter: blur(12px);
-    }
-    .logo-container {
-      text-align: center;
-      margin-bottom: 32px;
-    }
-    .logo-img {
-      width: 120px;
-      height: 120px;
-      border-radius: 24px;
-      box-shadow: 0 0 60px #ffd700a0;
-      background: #0f172a;
-      object-fit: cover;
-      border: 2.5px solid var(--gold);
-      margin-bottom: 18px;
-    }
-    .header-title {
-      font-size: 2.3em;
-      font-weight: 900;
-      background: linear-gradient(135deg, #ffd700, #00ffb3);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      letter-spacing: -1px;
-      margin-bottom: 8px;
-    }
-    .header-desc {
-      color: #ffe066;
-      font-size: 1.05em;
-    }
     .lcd-display {
       background: var(--lcd-bg);
       border: var(--lcd-border);
       box-shadow: var(--lcd-shadow);
-      border-radius: 24px;
-      padding: 38px 32px 28px 32px;
+      border-radius: 32px;
+      padding: 48px 40px 38px 40px;
       margin-bottom: 38px;
       margin-top: 18px;
       color: var(--life-green);
-      font-size: 1.5em;
+      font-size: 1.7em;
       font-family: 'Share Tech Mono', monospace;
       text-shadow: 0 0 18px #00ffb3cc, 0 0 2px #00ffb3a0;
       letter-spacing: 1.5px;
-      min-height: 160px;
+      min-height: 260px;
       display: flex;
       flex-direction: column;
-      gap: 16px;
+      gap: 22px;
       align-items: flex-start;
       justify-content: center;
       opacity: 0.99;
       transition: background 0.3s;
-      border-top: 8px solid #00ffb3;
-      border-bottom: 8px solid #00ffb3;
+      border-top: 10px solid #00ffb3;
+      border-bottom: 10px solid #00ffb3;
       border-left: 0;
       border-right: 0;
     }
     .lcd-label {
       color: #baffd9;
-      font-size: 1.1em;
-      margin-right: 8px;
+      font-size: 1.15em;
+      margin-right: 12px;
       font-weight: 700;
       letter-spacing: 0.5px;
       text-shadow: 0 0 8px #00ffb3a0;
@@ -134,17 +98,43 @@
     .lcd-life {
       color: var(--life-green);
       font-weight: bold;
-      text-shadow: 0 0 12px #00ffb3cc;
+      text-shadow: 0 0 18px #00ffb3cc;
+      font-size: 1.1em;
     }
     .lcd-gas {
       color: var(--flame);
       font-weight: bold;
-      text-shadow: 0 0 12px #ff6a00cc;
+      text-shadow: 0 0 18px #ff6a00cc;
+      font-size: 1.1em;
     }
     .lcd-dashboard {
       color: var(--gold);
       font-weight: bold;
       text-shadow: 0 0 8px #ffd700cc;
+    }
+    .lcd-title {
+      font-size: 2.2em;
+      font-weight: 900;
+      background: linear-gradient(135deg, #ffd700, #00ffb3);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      letter-spacing: 2px;
+      margin-bottom: 18px;
+      text-align: center;
+      width: 100%;
+      text-shadow: 0 0 24px #00ffb3cc;
+    }
+    .lcd-logo {
+      display: block;
+      margin: 0 auto 18px auto;
+      width: 120px;
+      height: 120px;
+      border-radius: 24px;
+      box-shadow: 0 0 60px #ffd700a0;
+      background: #0f172a;
+      object-fit: cover;
+      border: 2.5px solid var(--gold);
     }
     .wallet-section {
       display: flex;
@@ -170,24 +160,6 @@
       letter-spacing: 1px;
     }
     .wallet-btn:hover { background: #ffd700; color: #0f172a; }
-    .dashboard-btn {
-      background: #0f172a;
-      color: var(--gold);
-      border: 2.5px solid var(--gold);
-      border-radius: 12px;
-      padding: 16px 36px;
-      font-size: 1.15em;
-      font-weight: 700;
-      cursor: pointer;
-      font-family: inherit;
-      box-shadow: 0 0 18px #ffd700a0;
-      transition: all 0.2s;
-      margin: 18px auto 0 auto;
-      display: block;
-      width: 100%;
-      letter-spacing: 1px;
-    }
-    .dashboard-btn:hover { background: #ffd700; color: #0f172a; }
     .wallet-address {
       color: #baffd9;
       font-size: 1.1em;
@@ -225,50 +197,28 @@
       color: #ffd700;
       border: 2px solid #ffd700;
     }
-    .loading {
-      display: inline-block;
-      width: 16px;
-      height: 16px;
-      border: 3px solid currentColor;
-      border-top-color: transparent;
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-      margin-left: 8px;
-    }
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
   </style>
 </head>
 <body>
   <div class="container">
-    <div class="glass">
-      <div class="logo-container">
-        <img src="https://brown-left-viper-691.mypinata.cloud/ipfs/bafybeiarjogrmlafa7t4tzyukv633iy4lf7nxtyqm6jzg2zpkweldfsiru" alt="DragonLock Logo" class="logo-img" />
-        <div class="header-title">Dragon Escrow</div>
-        <div class="header-desc">Secure Login Portal</div>
-      </div>
-      <div id="lcd" class="lcd-display">
-        <span style="color:#baffd9;">Loading contract stats...</span>
-      </div>
-      <button class="dashboard-btn" onclick="window.location.href='dashboard.html'">
-        <span class="lcd-dashboard">🟡 Dashboard</span>
-      </button>
-      <div id="messages"></div>
-      <div class="wallet-section">
-        <button class="wallet-btn" id="walletBtn">Connect MetaMask Wallet</button>
-        <div class="wallet-address" id="walletAddress"></div>
-        <div id="adminBadge"></div>
-      </div>
+    <div id="lcd" class="lcd-display">
+      <img src="https://brown-left-viper-691.mypinata.cloud/ipfs/bafybeiarjogrmlafa7t4tzyukv633iy4lf7nxtyqm6jzg2zpkweldfsiru" alt="DragonLock Logo" class="lcd-logo" />
+      <div class="lcd-title">Dragon Escrow Vault</div>
+      <span style="color:#baffd9;">Loading contract stats...</span>
     </div>
+    <div class="wallet-section">
+      <button class="wallet-btn" id="walletBtn">Connect MetaMask Wallet</button>
+      <div class="wallet-address" id="walletAddress"></div>
+      <div id="adminBadge"></div>
+    </div>
+    <div id="messages"></div>
   </div>
   <script>
     // ---- CONTRACT CONFIG ----
     const CONTRACT_ADDRESS = "0x39B0A759C18B50ab4126a94dF1B86947BB51a6e4";
     const MONAD_CHAIN_ID = "0x8F"; // 143 in hex
     const MONAD_RPC = "https://rpc.monad.xyz";
-    // PASTE YOUR FULL ABI BELOW
-    const CONTRACT_ABI = [/* PASTE YOUR FULL ABI HERE */];
+    const CONTRACT_ABI = [/* PASTE YOUR FULL ABI HERE (from your message) */];
     const OWNER_ADDRESS = "0x592B35c8917eD36c39Ef73D0F5e92B0173560b2e";
 
     let web3 = new Web3(MONAD_RPC); // fallback for read-only
@@ -304,25 +254,19 @@
         let escrowCount = 0;
         let lifeValue = null, gasValue = null;
 
-        // Try to get escrowCount if available
         if (contract.methods.escrowCount) {
-          try {
-            escrowCount = await contract.methods.escrowCount().call();
-          } catch {}
+          try { escrowCount = await contract.methods.escrowCount().call(); } catch {}
         }
-        // Try to get "life" or "gas" function if available
         if (contract.methods.life) {
-          try {
-            lifeValue = await contract.methods.life().call();
-          } catch {}
+          try { lifeValue = await contract.methods.life().call(); } catch {}
         }
         if (contract.methods.gas) {
-          try {
-            gasValue = await contract.methods.gas().call();
-          } catch {}
+          try { gasValue = await contract.methods.gas().call(); } catch {}
         }
 
         document.getElementById('lcd').innerHTML = `
+          <img src="https://brown-left-viper-691.mypinata.cloud/ipfs/bafybeiarjogrmlafa7t4tzyukv633iy4lf7nxtyqm6jzg2zpkweldfsiru" alt="DragonLock Logo" class="lcd-logo" />
+          <div class="lcd-title">Dragon Escrow Vault</div>
           <div><span class="lcd-label">Platform Fee:</span> <span class="lcd-dashboard">${(feePercent/100).toFixed(2)}%</span></div>
           <div><span class="lcd-label">Total Fees Collected:</span> <span class="lcd-dashboard">${formatEth(totalFees)} MON</span></div>
           <div><span class="lcd-label">Fee Collector:</span> <span class="lcd-dashboard">${formatAddress(feeCollector)}</span></div>
@@ -334,6 +278,7 @@
         `;
       } catch (err) {
         document.getElementById('lcd').innerHTML = `<span style="color:#ef4444;">Failed to load contract stats</span>`;
+        showMessage('Failed to load contract stats: ' + (err.message || 'Unknown error'), 'error');
       }
     }
 
@@ -390,10 +335,7 @@
           document.getElementById('adminBadge').innerHTML = '';
         }
 
-        showMessage('Wallet connected! Redirecting...', 'success');
-        setTimeout(() => {
-          window.location.href = "dashboard.html";
-        }, 1500);
+        showMessage('Wallet connected!', 'success');
 
         // Update LCD with live data from wallet
         updateLCD();
