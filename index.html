@@ -7,7 +7,6 @@
   <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/web3/4.3.0/web3.min.js"></script>
   <style>
-    /* ... your styles unchanged ... */
     :root {
       --life-green: #00ffb3;
       --life-green-dark: #009e6e;
@@ -194,8 +193,91 @@
     // ---- CONTRACT CONFIG ----
     const CONTRACT_ADDRESS = "0x39B0A759C18B50ab4126a94dF1B86947BB51a6e4";
     const MONAD_CHAIN_ID = "0x8F"; // 143 in hex
-    const MONAD_RPC = "https://monad-mainnet.g.alchemy.com/v2/Uwb7T0DbXMQHjiJBNf9_b005qYjLmJqk";
-    const CONTRACT_ABI = [/* ... your ABI ... */];
+    const MONAD_RPC = "https://rpc.monad.xyz";
+    const CONTRACT_ABI = [
+      {
+        "inputs": [],
+        "stateMutability": "nonpayable",
+        "type": "constructor"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          { "indexed": true, "internalType": "uint256", "name": "escrowId", "type": "uint256" }
+        ],
+        "name": "EscrowCancelled",
+        "type": "event"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          { "indexed": true, "internalType": "uint256", "name": "escrowId", "type": "uint256" },
+          { "indexed": true, "internalType": "address", "name": "buyer", "type": "address" },
+          { "indexed": true, "internalType": "address", "name": "seller", "type": "address" },
+          { "indexed": false, "internalType": "uint256", "name": "amount", "type": "uint256" }
+        ],
+        "name": "EscrowCreated",
+        "type": "event"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          { "indexed": true, "internalType": "uint256", "name": "escrowId", "type": "uint256" }
+        ],
+        "name": "EscrowReleased",
+        "type": "event"
+      },
+      {
+        "inputs": [
+          { "internalType": "uint256", "name": "_escrowId", "type": "uint256" }
+        ],
+        "name": "cancelEscrow",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          { "internalType": "address", "name": "_seller", "type": "address" }
+        ],
+        "name": "createEscrow",
+        "outputs": [],
+        "stateMutability": "payable",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          { "internalType": "uint256", "name": "", "type": "uint256" }
+        ],
+        "name": "escrows",
+        "outputs": [
+          { "internalType": "address", "name": "buyer", "type": "address" },
+          { "internalType": "address", "name": "seller", "type": "address" },
+          { "internalType": "uint256", "name": "amount", "type": "uint256" },
+          { "internalType": "bool", "name": "isActive", "type": "bool" }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [],
+        "name": "owner",
+        "outputs": [
+          { "internalType": "address", "name": "", "type": "address" }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          { "internalType": "uint256", "name": "_escrowId", "type": "uint256" }
+        ],
+        "name": "releaseEscrow",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      }
+    ];
     const OWNER_ADDRESS = "0x592B35c8917eD36c39Ef73D0F5e92B0173560b2e";
 
     // ---- SAFE WEB3 INIT ----
@@ -225,9 +307,13 @@
     async function connectWallet() {
       try {
         if (!window.ethereum) {
-          showMessage('Please install MetaMask!', 'error');
+          showMessage('Please install MetaMask or another Web3 wallet!', 'error');
           return;
         }
+
+        showMessage('Requesting wallet connection...', 'info');
+
+        // Request account access
         const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
         userAddress = accounts[0];
 
@@ -237,6 +323,7 @@
             method: 'wallet_switchEthereumChain',
             params: [{ chainId: MONAD_CHAIN_ID }],
           });
+          showMessage('Switched to Monad Mainnet', 'success');
         } catch (switchError) {
           if (switchError.code === 4902) {
             try {
@@ -245,15 +332,19 @@
                 params: [{
                   chainId: MONAD_CHAIN_ID,
                   chainName: 'Monad Mainnet',
-                  nativeCurrency: { name: 'MON', symbol: 'MON', decimals: 18 },
+                  nativeCurrency: { name: 'Monad', symbol: 'MON', decimals: 18 },
                   rpcUrls: [MONAD_RPC],
-                  blockExplorerUrls: ['https://monad-explorer.io/']
+                  blockExplorerUrls: ['https://monadvision.com']
                 }]
               });
+              showMessage('Monad network added successfully!', 'success');
             } catch (addError) {
-              showMessage('Failed to add Monad network', 'error');
+              showMessage('Failed to add Monad network: ' + addError.message, 'error');
               return;
             }
+          } else {
+            showMessage('Failed to switch network: ' + switchError.message, 'error');
+            return;
           }
         }
 
@@ -261,40 +352,65 @@
         web3 = new Web3(window.ethereum);
         contract = new web3.eth.Contract(CONTRACT_ABI, CONTRACT_ADDRESS);
 
-        document.getElementById('connectBtn').textContent = 'Connected';
+        // Update UI
+        document.getElementById('connectBtn').textContent = 'Connected ✓';
+        document.getElementById('connectBtn').style.background = 'linear-gradient(90deg, #00ffb3, #ffd700)';
         document.getElementById('walletAddress').textContent = formatAddress(userAddress);
 
         // Check if admin
-        const owner = await contract.methods.owner().call();
-        if (owner.toLowerCase() === userAddress.toLowerCase()) {
-          document.getElementById('adminBadge').innerHTML = '<span class="admin-badge">Admin (Trezor)</span>';
-        } else {
-          document.getElementById('adminBadge').innerHTML = '';
+        try {
+          const owner = await contract.methods.owner().call();
+          if (owner.toLowerCase() === userAddress.toLowerCase()) {
+            document.getElementById('adminBadge').innerHTML = '<span class="admin-badge">Admin (Trezor)</span>';
+          } else {
+            document.getElementById('adminBadge').innerHTML = '';
+          }
+        } catch (err) {
+          // ignore
         }
 
-        showMessage('Wallet connected! Redirecting...', 'success');
+        showMessage('Wallet connected successfully! Redirecting...', 'success');
         setTimeout(() => {
           window.location.href = "dashboard.html";
-        }, 1200);
+        }, 1500);
 
         // Listen for account changes
         window.ethereum.on('accountsChanged', (accounts) => {
           if (accounts.length === 0) {
             userAddress = null;
+            document.getElementById('connectBtn').textContent = 'Connect Wallet';
+            document.getElementById('connectBtn').style.background = 'linear-gradient(90deg, #ffd700 60%, #00ffb3 100%)';
             document.getElementById('walletAddress').textContent = '';
             document.getElementById('adminBadge').innerHTML = '';
             showMessage('Wallet disconnected', 'info');
           } else {
-            userAddress = accounts[0];
-            document.getElementById('walletAddress').textContent = formatAddress(userAddress);
+            location.reload();
           }
         });
 
+        // Listen for chain changes
+        window.ethereum.on('chainChanged', () => {
+          location.reload();
+        });
+
       } catch (error) {
-        console.error(error);
-        showMessage('Failed to connect wallet: ' + error.message, 'error');
+        showMessage('Failed to connect wallet: ' + (error.message || 'Unknown error'), 'error');
       }
     }
+
+    // Optional: Auto-detect if already connected
+    window.addEventListener('load', async () => {
+      if (window.ethereum) {
+        try {
+          const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+          if (accounts.length > 0) {
+            // Optionally auto-connect if already authorized
+          }
+        } catch (err) {
+          // ignore
+        }
+      }
+    });
   </script>
 </body>
 </html>
