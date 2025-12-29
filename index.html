@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Dragon Escrow Vault</title>
+  <title>Dragon Escrow Vault Dashboard</title>
   <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/web3/4.3.0/web3.min.js"></script>
   <style>
@@ -14,15 +14,17 @@
       --cosmic-blue-light: #1e293b;
       --glass: rgba(0,255,179,0.10);
       --glass-border: rgba(0,255,179,0.18);
+      --gold: #ffd700;
+      --gold-dark: #bfa100;
       --digital-bg: linear-gradient(135deg, #0f172a 0%, #1e293b 60%, #0f172a 100%);
-      --digital-shadow: 0 8px 32px #00ffb3a0, 0 1.5px 8px #00ffb3a0;
+      --digital-shadow: 0 8px 32px #ffd70040, 0 1.5px 8px #00ffb3a0;
     }
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
       font-family: 'Share Tech Mono', 'Courier New', monospace;
       background: var(--digital-bg);
       min-height: 100vh;
-      color: var(--life-green);
+      color: var(--gold);
       position: relative;
       overflow-x: hidden;
     }
@@ -31,7 +33,7 @@
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
       background: 
-        radial-gradient(circle at 20% 50%, rgba(0,255,179,0.10) 0%, transparent 60%),
+        radial-gradient(circle at 20% 50%, rgba(255,215,0,0.10) 0%, transparent 60%),
         radial-gradient(circle at 80% 80%, rgba(0,255,179,0.08) 0%, transparent 60%),
         url('https://www.transparenttextures.com/patterns/stardust.png');
       pointer-events: none;
@@ -43,7 +45,7 @@
       50% { opacity: 0.8; }
     }
     .container {
-      max-width: 1200px;
+      max-width: 700px;
       margin: 40px auto 0 auto;
       padding: 40px 24px;
       position: relative;
@@ -76,26 +78,26 @@
       width: 80px;
       height: 80px;
       border-radius: 20px;
-      box-shadow: 0 0 32px #00ffb3a0;
+      box-shadow: 0 0 32px #ffd700a0;
       background: #0f172a;
       object-fit: cover;
-      border: 2px solid var(--life-green);
+      border: 2px solid var(--gold);
     }
     .header-title {
-      font-size: 2.5em;
+      font-size: 2.2em;
       font-weight: 900;
-      background: linear-gradient(135deg, #00ffb3, #00ffb3 60%, #1e293b 100%);
+      background: linear-gradient(135deg, #ffd700, #00ffb3 60%, #1e293b 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
       letter-spacing: -2px;
-      text-shadow: 0 0 16px #00ffb3cc;
+      text-shadow: 0 0 16px #ffd700cc;
     }
     .header-desc {
-      color: #baffd9;
+      color: #ffe066;
       font-size: 1.1em;
       margin-top: 6px;
-      text-shadow: 0 0 8px #00ffb3a0;
+      text-shadow: 0 0 8px #ffd700a0;
     }
     .wallet-section {
       display: flex;
@@ -104,7 +106,7 @@
       align-items: flex-end;
     }
     .wallet-btn {
-      background: #00ffb3;
+      background: linear-gradient(90deg, #ffd700 60%, #00ffb3 100%);
       color: #0f172a;
       border: none;
       border-radius: 8px;
@@ -113,13 +115,25 @@
       font-weight: 700;
       cursor: pointer;
       font-family: inherit;
-      box-shadow: 0 0 16px #00ffb3a0;
+      box-shadow: 0 0 16px #ffd700a0;
       transition: all 0.2s;
+      margin-bottom: 8px;
     }
-    .wallet-btn:hover { background: #009e6e; color: #fff; }
+    .wallet-btn:hover { background: #bfa100; color: #fff; }
     .wallet-address {
-      color: #baffd9;
-      font-size: 0.9em;
+      color: #ffe066;
+      font-size: 0.95em;
+    }
+    .admin-badge {
+      display: inline-block;
+      background: #ffd700;
+      color: #0f172a;
+      font-weight: bold;
+      border-radius: 8px;
+      padding: 4px 12px;
+      margin-top: 12px;
+      font-size: 1em;
+      box-shadow: 0 0 8px #ffd700a0;
     }
     .message {
       padding: 12px 18px;
@@ -133,20 +147,20 @@
       color: #fff;
     }
     .success-message {
-      background: linear-gradient(135deg, #00ffb3, #009e6e);
+      background: linear-gradient(135deg, #ffd700, #00ffb3);
       color: #0f172a;
       font-weight: 700;
     }
     .info-message {
-      background: #00ffb333;
-      color: #00ffb3;
-      border: 2px solid #00ffb3;
+      background: #ffd70033;
+      color: #ffd700;
+      border: 2px solid #ffd700;
     }
     .loading {
       display: inline-block;
       width: 16px;
       height: 16px;
-      border: 3px solid #00ffb3;
+      border: 3px solid #ffd700;
       border-top-color: transparent;
       border-radius: 50%;
       animation: spin 0.8s linear infinite;
@@ -155,7 +169,62 @@
     @keyframes spin {
       to { transform: rotate(360deg); }
     }
-    /* Add your .action-btn, .form-btn, .form-input, .form-group, .form-label, .form-textarea, .escrow-card, .escrow-detail-row styles as needed */
+    .escrow-card {
+      background: rgba(255,255,255,0.03);
+      border: 1.5px solid #ffd70055;
+      border-radius: 16px;
+      padding: 18px 18px 10px 18px;
+      margin-bottom: 18px;
+      cursor: pointer;
+      transition: box-shadow 0.2s;
+      box-shadow: 0 2px 8px #ffd70022;
+    }
+    .escrow-card:hover {
+      box-shadow: 0 4px 24px #ffd70055;
+      background: rgba(255,255,255,0.07);
+    }
+    .escrow-id { font-weight: bold; color: #ffd700; }
+    .escrow-state { margin-left: 12px; color: #00ffb3; }
+    .escrow-amount { float: right; color: #ffe066; font-weight: bold; }
+    .escrow-detail-row {
+      margin: 8px 0;
+      display: flex;
+      justify-content: space-between;
+      font-size: 1.05em;
+    }
+    .form-group { margin-bottom: 18px; }
+    .form-label { display: block; margin-bottom: 6px; color: #ffd700; }
+    .form-input, .form-textarea {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 8px;
+      border: 1.5px solid #ffd70055;
+      background: #1e293b;
+      color: #ffd700;
+      font-size: 1em;
+      font-family: inherit;
+      margin-bottom: 4px;
+    }
+    .form-btn {
+      background: linear-gradient(90deg, #ffd700 60%, #00ffb3 100%);
+      color: #0f172a;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 22px;
+      font-size: 1em;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
+      box-shadow: 0 0 8px #ffd700a0;
+      margin-right: 8px;
+      margin-top: 8px;
+      transition: all 0.2s;
+    }
+    .form-btn:hover { background: #bfa100; color: #fff; }
+    .escrow-actions button {
+      margin-right: 10px;
+      margin-bottom: 10px;
+    }
   </style>
 </head>
 <body>
@@ -165,12 +234,13 @@
         <img src="https://brown-left-viper-691.mypinata.cloud/ipfs/bafybeiarjogrmlafa7t4tzyukv633iy4lf7nxtyqm6jzg2zpkweldfsiru" alt="DragonLock Logo" class="logo-img" />
         <div>
           <div class="header-title">Dragon Escrow Vault</div>
-          <div class="header-desc">Secure, digital, cosmic-green escrow for Monad</div>
+          <div class="header-desc">Secure, digital, cosmic-gold escrow for Monad</div>
         </div>
       </div>
       <div class="wallet-section">
         <button class="wallet-btn" id="connectBtn">Connect Wallet</button>
         <div class="wallet-address" id="walletAddress"></div>
+        <div id="adminBadge"></div>
       </div>
     </div>
     <div id="messages"></div>
@@ -181,16 +251,12 @@
     const CONTRACT_ADDRESS = "0x39B0A759C18B50ab4126a94dF1B86947BB51a6e4";
     const MONAD_CHAIN_ID = "0x8F"; // 143 in hex
     const MONAD_RPC = "https://monad-mainnet.g.alchemy.com/v2/Uwb7T0DbXMQHjiJBNf9_b005qYjLmJqk";
-    const CONTRACT_ABI = /* PASTE YOUR ABI HERE (as in your message) */;
+    const CONTRACT_ABI = [{"inputs":[],"stateMutability":"nonpayable","type":"constructor"},{"inputs":[],"name":"FeePercentTooHigh","type":"error"},{"inputs":[],"name":"InvalidAddress","type":"error"},{"inputs":[],"name":"InvalidAmount","type":"error"},{"inputs":[],"name":"InvalidEscrowId","type":"error"},{"inputs":[],"name":"InvalidState","type":"error"},{"inputs":[],"name":"TransferFailed","type":"error"},{"inputs":[],"name":"UnauthorizedAccess","type":"error"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"address","name":"previousAdmin","type":"address"},{"indexed":false,"internalType":"address","name":"newAdmin","type":"address"}],"name":"AdminChanged","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"beacon","type":"address"}],"name":"BeaconUpgraded","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"escrowId","type":"uint256"}],"name":"DeliveryConfirmed","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"escrowId","type":"uint256"}],"name":"DisputeRaised","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"escrowId","type":"uint256"},{"indexed":true,"internalType":"address","name":"winner","type":"address"}],"name":"DisputeResolved","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"escrowId","type":"uint256"},{"indexed":true,"internalType":"address","name":"buyer","type":"address"},{"indexed":true,"internalType":"address","name":"seller","type":"address"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"}],"name":"EscrowCreated","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"escrowId","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"feeAmount","type":"uint256"}],"name":"FeeCollected","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"address","name":"oldCollector","type":"address"},{"indexed":false,"internalType":"address","name":"newCollector","type":"address"}],"name":"FeeCollectorUpdated","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"uint256","name":"oldPercent","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"newPercent","type":"uint256"}],"name":"FeePercentUpdated","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"escrowId","type":"uint256"},{"indexed":true,"internalType":"address","name":"recipient","type":"address"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"}],"name":"FundsReleased","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"uint8","name":"version","type":"uint8"}],"name":"Initialized","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"previousOwner","type":"address"},{"indexed":true,"internalType":"address","name":"newOwner","type":"address"}],"name":"OwnershipTransferred","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"address","name":"account","type":"address"}],"name":"Paused","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"escrowId","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"}],"name":"PaymentDeposited","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"escrowId","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"}],"name":"Refunded","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"address","name":"account","type":"address"}],"name":"Unpaused","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"implementation","type":"address"}],"name":"Upgraded","type":"event"},{"inputs":[{"internalType":"uint256","name":"_escrowId","type":"uint256"}],"name":"approveRefund","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"_amount","type":"uint256"}],"name":"calculateFee","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"_escrowId","type":"uint256"}],"name":"confirmDelivery","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address payable","name":"_seller","type":"address"},{"internalType":"address","name":"_arbiter","type":"address"},{"internalType":"string","name":"_description","type":"string"}],"name":"createEscrow","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"payable","type":"function"},{"inputs":[],"name":"emergencyWithdraw","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"escrowCount","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"","type":"uint256"}],"name":"escrows","outputs":[{"internalType":"address payable","name":"buyer","type":"address"},{"internalType":"address payable","name":"seller","type":"address"},{"internalType":"address","name":"arbiter","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"},{"internalType":"enum DragonEscrowVault.State","name":"state","type":"uint8"},{"internalType":"uint256","name":"createdAt","type":"uint256"},{"internalType":"string","name":"description","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"feeCollector","outputs":[{"internalType":"address payable","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"feePercent","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"_escrowId","type":"uint256"}],"name":"getEscrow","outputs":[{"internalType":"address","name":"buyer","type":"address"},{"internalType":"address","name":"seller","type":"address"},{"internalType":"address","name":"arbiter","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"},{"internalType":"enum DragonEscrowVault.State","name":"state","type":"uint8"},{"internalType":"uint256","name":"createdAt","type":"uint256"},{"internalType":"string","name":"description","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"_user","type":"address"}],"name":"getUserEscrows","outputs":[{"internalType":"uint256[]","name":"","type":"uint256[]"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address payable","name":"_feeCollector","type":"address"},{"internalType":"uint256","name":"_feePercent","type":"uint256"}],"name":"initialize","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"owner","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"pause","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"paused","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"proxiableUUID","outputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"renounceOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"_escrowId","type":"uint256"}],"name":"requestRefund","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"_escrowId","type":"uint256"},{"internalType":"bool","name":"_releaseToBuyer","type":"bool"}],"name":"resolveDispute","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"totalFeesCollected","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"newOwner","type":"address"}],"name":"transferOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"unpause","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address payable","name":"_newCollector","type":"address"}],"name":"updateFeeCollector","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"_newFeePercent","type":"uint256"}],"name":"updateFeePercent","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"newImplementation","type":"address"}],"name":"upgradeTo","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"newImplementation","type":"address"},{"internalType":"bytes","name":"data","type":"bytes"}],"name":"upgradeToAndCall","outputs":[],"stateMutability":"payable","type":"function"},{"stateMutability":"payable","type":"receive"}];
 
     const OWNER_ADDRESS = "0x592B35c8917eD36c39Ef73D0F5e92B0173560b2e";
-
     let web3, contract, userAddress;
     let escrows = [];
-    let selectedEscrow = null;
-    let filter = "All";
     let isLoading = false;
-
     const STATE_LABELS = ["Created", "Delivered", "Disputed", "Completed", "Refunded"];
 
     // ---- UTILITY FUNCTIONS ----
@@ -202,12 +268,10 @@
       div.appendChild(msg);
       setTimeout(() => msg.remove(), 5000);
     }
-
     function formatAddress(addr) {
       if (!addr) return '';
       return `${addr.slice(0, 6)}...${addr.slice(-4)}`;
     }
-
     function formatEth(wei) {
       return web3.utils.fromWei(wei.toString(), 'ether');
     }
@@ -221,7 +285,6 @@
           showMessage('Please install MetaMask!', 'error');
           return;
         }
-
         const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
         userAddress = accounts[0];
 
@@ -257,7 +320,14 @@
         document.getElementById('connectBtn').textContent = 'Connected';
         document.getElementById('walletAddress').textContent = formatAddress(userAddress);
 
-        showMessage('Wallet connected successfully!', 'success');
+        // Check if admin
+        const owner = await contract.methods.owner().call();
+        if (owner.toLowerCase() === userAddress.toLowerCase()) {
+          document.getElementById('adminBadge').innerHTML = '<span class="admin-badge">Admin (Trezor)</span>';
+        } else {
+          document.getElementById('adminBadge').innerHTML = '';
+        }
+
         await loadEscrows();
         render();
 
@@ -265,13 +335,16 @@
         window.ethereum.on('accountsChanged', (accounts) => {
           if (accounts.length === 0) {
             userAddress = null;
+            document.getElementById('walletAddress').textContent = '';
+            document.getElementById('adminBadge').innerHTML = '';
             showMessage('Wallet disconnected', 'info');
+            render();
           } else {
             userAddress = accounts[0];
             document.getElementById('walletAddress').textContent = formatAddress(userAddress);
             loadEscrows();
+            render();
           }
-          render();
         });
 
       } catch (error) {
@@ -330,11 +403,11 @@
           <div class="escrow-detail-row"><strong>Fee Collector:</strong> <span>${formatAddress(feeCollector)}</span></div>
           <div class="escrow-detail-row"><strong>Paused:</strong> <span>${paused ? "Yes" : "No"}</span></div>
           <div style="margin-top:18px;">
-            <button class="action-btn" onclick="showUpdateFeeForm()">Update Fee %</button>
-            <button class="action-btn" onclick="showUpdateCollectorForm()">Update Collector</button>
-            <button class="action-btn" onclick="pauseContract()" ${paused ? "disabled" : ""}>Pause</button>
-            <button class="action-btn" onclick="unpauseContract()" ${!paused ? "disabled" : ""}>Unpause</button>
-            <button class="action-btn" onclick="emergencyWithdraw()">Withdraw All Profits</button>
+            <button class="form-btn" onclick="showUpdateFeeForm()">Update Fee %</button>
+            <button class="form-btn" onclick="showUpdateCollectorForm()">Update Collector</button>
+            <button class="form-btn" onclick="pauseContract()" ${paused ? "disabled" : ""}>Pause</button>
+            <button class="form-btn" onclick="unpauseContract()" ${!paused ? "disabled" : ""}>Unpause</button>
+            <button class="form-btn" onclick="emergencyWithdraw()">Withdraw All Profits</button>
           </div>
         </div>
       `;
@@ -448,7 +521,7 @@
                 <span class="escrow-id">#${e.id}</span>
                 <span class="escrow-state">${STATE_LABELS[e.state]}</span>
                 <span class="escrow-amount">${formatEth(e.amount)} MON</span>
-                <div style="color:#baffd9;font-size:0.95em;">${e.description}</div>
+                <div style="color:#ffe066;font-size:0.95em;">${e.description}</div>
               </div>
             `).join('')}
           </div>
@@ -533,17 +606,17 @@
     function renderEscrowActions(e) {
       let html = '';
       if (userAddress && e.buyer.toLowerCase() === userAddress.toLowerCase() && e.state === 0) {
-        html += `<button class="action-btn" onclick="confirmDelivery('${e.id}')">Confirm Delivery</button>`;
-        html += `<button class="action-btn" onclick="requestRefund('${e.id}')">Request Refund</button>`;
+        html += `<button class="form-btn" onclick="confirmDelivery('${e.id}')">Confirm Delivery</button>`;
+        html += `<button class="form-btn" onclick="requestRefund('${e.id}')">Request Refund</button>`;
       }
       if (userAddress && e.seller.toLowerCase() === userAddress.toLowerCase() && e.state === 2) {
-        html += `<button class="action-btn" onclick="approveRefund('${e.id}')">Approve Refund</button>`;
+        html += `<button class="form-btn" onclick="approveRefund('${e.id}')">Approve Refund</button>`;
       }
       if (userAddress && e.arbiter.toLowerCase() === userAddress.toLowerCase() && e.state === 2) {
-        html += `<button class="action-btn" onclick="resolveDispute('${e.id}', true)">Release to Buyer</button>`;
-        html += `<button class="action-btn" onclick="resolveDispute('${e.id}', false)">Release to Seller</button>`;
+        html += `<button class="form-btn" onclick="resolveDispute('${e.id}', true)">Release to Buyer</button>`;
+        html += `<button class="form-btn" onclick="resolveDispute('${e.id}', false)">Release to Seller</button>`;
       }
-      if (!html) html = `<span style="color:#baffd9;">No actions available.</span>`;
+      if (!html) html = `<span style="color:#ffe066;">No actions available.</span>`;
       return html;
     }
 
@@ -588,8 +661,14 @@
       }
     };
 
-    // ---- INITIAL RENDER ----
-    render();
+    // ---- AUTO-CONNECT IF ALREADY CONNECTED ----
+    window.addEventListener('DOMContentLoaded', async () => {
+      if (window.ethereum && window.ethereum.selectedAddress) {
+        await connectWallet();
+      } else {
+        render();
+      }
+    });
   </script>
 </body>
 </html>
