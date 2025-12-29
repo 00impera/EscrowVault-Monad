@@ -7,6 +7,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/web3/4.3.0/web3.min.js"></script>
   <style>
+    /* ... your styles unchanged ... */
     :root {
       --life-green: #00ffb3;
       --life-green-dark: #009e6e;
@@ -169,68 +170,12 @@
     @keyframes spin {
       to { transform: rotate(360deg); }
     }
-    .escrow-card {
-      background: rgba(255,255,255,0.03);
-      border: 1.5px solid #ffd70055;
-      border-radius: 16px;
-      padding: 18px 18px 10px 18px;
-      margin-bottom: 18px;
-      cursor: pointer;
-      transition: box-shadow 0.2s;
-      box-shadow: 0 2px 8px #ffd70022;
-    }
-    .escrow-card:hover {
-      box-shadow: 0 4px 24px #ffd70055;
-      background: rgba(255,255,255,0.07);
-    }
-    .escrow-id { font-weight: bold; color: #ffd700; }
-    .escrow-state { margin-left: 12px; color: #00ffb3; }
-    .escrow-amount { float: right; color: #ffe066; font-weight: bold; }
-    .escrow-detail-row {
-      margin: 8px 0;
-      display: flex;
-      justify-content: space-between;
-      font-size: 1.05em;
-    }
-    .form-group { margin-bottom: 18px; }
-    .form-label { display: block; margin-bottom: 6px; color: #ffd700; }
-    .form-input, .form-textarea {
-      width: 100%;
-      padding: 10px 12px;
-      border-radius: 8px;
-      border: 1.5px solid #ffd70055;
-      background: #1e293b;
-      color: #ffd700;
-      font-size: 1em;
-      font-family: inherit;
-      margin-bottom: 4px;
-    }
-    .form-btn {
-      background: linear-gradient(90deg, #ffd700 60%, #00ffb3 100%);
-      color: #0f172a;
-      border: none;
-      border-radius: 8px;
-      padding: 10px 22px;
-      font-size: 1em;
-      font-weight: 700;
-      cursor: pointer;
-      font-family: inherit;
-      box-shadow: 0 0 8px #ffd700a0;
-      margin-right: 8px;
-      margin-top: 8px;
-      transition: all 0.2s;
-    }
-    .form-btn:hover { background: #bfa100; color: #fff; }
-    .escrow-actions button {
-      margin-right: 10px;
-      margin-bottom: 10px;
-    }
   </style>
 </head>
 <body>
   <div class="container">
-    <div class="header">
-      <div class="header-left">
+    <div class="glass">
+      <div class="header">
         <img src="https://brown-left-viper-691.mypinata.cloud/ipfs/bafybeiarjogrmlafa7t4tzyukv633iy4lf7nxtyqm6jzg2zpkweldfsiru" alt="DragonLock Logo" class="logo-img" />
         <div>
           <div class="header-title">Dragon Escrow Vault</div>
@@ -242,24 +187,22 @@
         <div class="wallet-address" id="walletAddress"></div>
         <div id="adminBadge"></div>
       </div>
+      <div id="messages"></div>
     </div>
-    <div id="messages"></div>
-    <div id="main"></div>
   </div>
   <script>
     // ---- CONTRACT CONFIG ----
     const CONTRACT_ADDRESS = "0x39B0A759C18B50ab4126a94dF1B86947BB51a6e4";
     const MONAD_CHAIN_ID = "0x8F"; // 143 in hex
     const MONAD_RPC = "https://monad-mainnet.g.alchemy.com/v2/Uwb7T0DbXMQHjiJBNf9_b005qYjLmJqk";
-    const CONTRACT_ABI = [{"inputs":[],"stateMutability":"nonpayable","type":"constructor"},{"inputs":[],"name":"FeePercentTooHigh","type":"error"},{"inputs":[],"name":"InvalidAddress","type":"error"},{"inputs":[],"name":"InvalidAmount","type":"error"},{"inputs":[],"name":"InvalidEscrowId","type":"error"},{"inputs":[],"name":"InvalidState","type":"error"},{"inputs":[],"name":"TransferFailed","type":"error"},{"inputs":[],"name":"UnauthorizedAccess","type":"error"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"address","name":"previousAdmin","type":"address"},{"indexed":false,"internalType":"address","name":"newAdmin","type":"address"}],"name":"AdminChanged","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"beacon","type":"address"}],"name":"BeaconUpgraded","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"escrowId","type":"uint256"}],"name":"DeliveryConfirmed","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"escrowId","type":"uint256"}],"name":"DisputeRaised","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"escrowId","type":"uint256"},{"indexed":true,"internalType":"address","name":"winner","type":"address"}],"name":"DisputeResolved","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"escrowId","type":"uint256"},{"indexed":true,"internalType":"address","name":"buyer","type":"address"},{"indexed":true,"internalType":"address","name":"seller","type":"address"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"}],"name":"EscrowCreated","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"escrowId","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"feeAmount","type":"uint256"}],"name":"FeeCollected","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"address","name":"oldCollector","type":"address"},{"indexed":false,"internalType":"address","name":"newCollector","type":"address"}],"name":"FeeCollectorUpdated","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"uint256","name":"oldPercent","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"newPercent","type":"uint256"}],"name":"FeePercentUpdated","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"escrowId","type":"uint256"},{"indexed":true,"internalType":"address","name":"recipient","type":"address"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"}],"name":"FundsReleased","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"uint8","name":"version","type":"uint8"}],"name":"Initialized","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"previousOwner","type":"address"},{"indexed":true,"internalType":"address","name":"newOwner","type":"address"}],"name":"OwnershipTransferred","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"address","name":"account","type":"address"}],"name":"Paused","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"escrowId","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"}],"name":"PaymentDeposited","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"escrowId","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"}],"name":"Refunded","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"address","name":"account","type":"address"}],"name":"Unpaused","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"implementation","type":"address"}],"name":"Upgraded","type":"event"},{"inputs":[{"internalType":"uint256","name":"_escrowId","type":"uint256"}],"name":"approveRefund","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"_amount","type":"uint256"}],"name":"calculateFee","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"_escrowId","type":"uint256"}],"name":"confirmDelivery","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address payable","name":"_seller","type":"address"},{"internalType":"address","name":"_arbiter","type":"address"},{"internalType":"string","name":"_description","type":"string"}],"name":"createEscrow","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"payable","type":"function"},{"inputs":[],"name":"emergencyWithdraw","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"escrowCount","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"","type":"uint256"}],"name":"escrows","outputs":[{"internalType":"address payable","name":"buyer","type":"address"},{"internalType":"address payable","name":"seller","type":"address"},{"internalType":"address","name":"arbiter","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"},{"internalType":"enum DragonEscrowVault.State","name":"state","type":"uint8"},{"internalType":"uint256","name":"createdAt","type":"uint256"},{"internalType":"string","name":"description","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"feeCollector","outputs":[{"internalType":"address payable","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"feePercent","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"_escrowId","type":"uint256"}],"name":"getEscrow","outputs":[{"internalType":"address","name":"buyer","type":"address"},{"internalType":"address","name":"seller","type":"address"},{"internalType":"address","name":"arbiter","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"},{"internalType":"enum DragonEscrowVault.State","name":"state","type":"uint8"},{"internalType":"uint256","name":"createdAt","type":"uint256"},{"internalType":"string","name":"description","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"_user","type":"address"}],"name":"getUserEscrows","outputs":[{"internalType":"uint256[]","name":"","type":"uint256[]"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address payable","name":"_feeCollector","type":"address"},{"internalType":"uint256","name":"_feePercent","type":"uint256"}],"name":"initialize","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"owner","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"pause","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"paused","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"proxiableUUID","outputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"renounceOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"_escrowId","type":"uint256"}],"name":"requestRefund","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"_escrowId","type":"uint256"},{"internalType":"bool","name":"_releaseToBuyer","type":"bool"}],"name":"resolveDispute","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"totalFeesCollected","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"newOwner","type":"address"}],"name":"transferOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"unpause","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address payable","name":"_newCollector","type":"address"}],"name":"updateFeeCollector","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"_newFeePercent","type":"uint256"}],"name":"updateFeePercent","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"newImplementation","type":"address"}],"name":"upgradeTo","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"newImplementation","type":"address"},{"internalType":"bytes","name":"data","type":"bytes"}],"name":"upgradeToAndCall","outputs":[],"stateMutability":"payable","type":"function"},{"stateMutability":"payable","type":"receive"}];
-
+    const CONTRACT_ABI = [/* ... your ABI ... */];
     const OWNER_ADDRESS = "0x592B35c8917eD36c39Ef73D0F5e92B0173560b2e";
-    let web3, contract, userAddress;
-    let escrows = [];
-    let isLoading = false;
-    const STATE_LABELS = ["Created", "Delivered", "Disputed", "Completed", "Refunded"];
 
-    // ---- UTILITY FUNCTIONS ----
+    // ---- SAFE WEB3 INIT ----
+    let web3 = new Web3(MONAD_RPC); // fallback for read-only
+    let contract = new web3.eth.Contract(CONTRACT_ABI, CONTRACT_ADDRESS);
+    let userAddress = null;
+
     function showMessage(text, type = 'info') {
       const div = document.getElementById('messages');
       const msg = document.createElement('div');
@@ -273,10 +216,10 @@
       return `${addr.slice(0, 6)}...${addr.slice(-4)}`;
     }
     function formatEth(wei) {
+      if (!web3) return '';
       return web3.utils.fromWei(wei.toString(), 'ether');
     }
 
-    // ---- WALLET CONNECTION ----
     document.getElementById('connectBtn').onclick = connectWallet;
 
     async function connectWallet() {
@@ -314,6 +257,7 @@
           }
         }
 
+        // Re-initialize web3 with wallet provider
         web3 = new Web3(window.ethereum);
         contract = new web3.eth.Contract(CONTRACT_ABI, CONTRACT_ADDRESS);
 
@@ -328,8 +272,10 @@
           document.getElementById('adminBadge').innerHTML = '';
         }
 
-        await loadEscrows();
-        render();
+        showMessage('Wallet connected! Redirecting...', 'success');
+        setTimeout(() => {
+          window.location.href = "dashboard.html";
+        }, 1200);
 
         // Listen for account changes
         window.ethereum.on('accountsChanged', (accounts) => {
@@ -338,12 +284,9 @@
             document.getElementById('walletAddress').textContent = '';
             document.getElementById('adminBadge').innerHTML = '';
             showMessage('Wallet disconnected', 'info');
-            render();
           } else {
             userAddress = accounts[0];
             document.getElementById('walletAddress').textContent = formatAddress(userAddress);
-            loadEscrows();
-            render();
           }
         });
 
@@ -352,323 +295,6 @@
         showMessage('Failed to connect wallet: ' + error.message, 'error');
       }
     }
-
-    // ---- CONTRACT INTERACTIONS ----
-    async function loadEscrows() {
-      if (!contract || !userAddress) return;
-      try {
-        isLoading = true;
-        render();
-        const userEscrowIds = await contract.methods.getUserEscrows(userAddress).call();
-        escrows = [];
-        for (let id of userEscrowIds) {
-          const escrow = await contract.methods.getEscrow(id).call();
-          escrows.push({
-            id: id.toString(),
-            buyer: escrow.buyer,
-            seller: escrow.seller,
-            arbiter: escrow.arbiter,
-            amount: escrow.amount,
-            state: parseInt(escrow.state),
-            createdAt: escrow.createdAt,
-            description: escrow.description
-          });
-        }
-        isLoading = false;
-        render();
-      } catch (error) {
-        console.error(error);
-        showMessage('Failed to load escrows: ' + error.message, 'error');
-        isLoading = false;
-      }
-    }
-
-    // ---- ADMIN PANEL ----
-    async function renderAdminPanel() {
-      if (!contract || !userAddress) return "";
-      const owner = await contract.methods.owner().call();
-      if (owner.toLowerCase() !== userAddress.toLowerCase()) return "";
-
-      // Get stats
-      const totalFees = await contract.methods.totalFeesCollected().call();
-      const feePercent = await contract.methods.feePercent().call();
-      const feeCollector = await contract.methods.feeCollector().call();
-      const paused = await contract.methods.paused().call();
-
-      return `
-        <div class="glass" style="margin-top:32px;">
-          <h2>🛡️ Admin Panel</h2>
-          <div class="escrow-detail-row"><strong>Total Fees Collected:</strong> <span>${formatEth(totalFees)} MON</span></div>
-          <div class="escrow-detail-row"><strong>Platform Fee:</strong> <span>${feePercent / 100}%</span></div>
-          <div class="escrow-detail-row"><strong>Fee Collector:</strong> <span>${formatAddress(feeCollector)}</span></div>
-          <div class="escrow-detail-row"><strong>Paused:</strong> <span>${paused ? "Yes" : "No"}</span></div>
-          <div style="margin-top:18px;">
-            <button class="form-btn" onclick="showUpdateFeeForm()">Update Fee %</button>
-            <button class="form-btn" onclick="showUpdateCollectorForm()">Update Collector</button>
-            <button class="form-btn" onclick="pauseContract()" ${paused ? "disabled" : ""}>Pause</button>
-            <button class="form-btn" onclick="unpauseContract()" ${!paused ? "disabled" : ""}>Unpause</button>
-            <button class="form-btn" onclick="emergencyWithdraw()">Withdraw All Profits</button>
-          </div>
-        </div>
-      `;
-    }
-
-    window.showUpdateFeeForm = function () {
-      const main = document.getElementById("main");
-      main.innerHTML = `
-        <div class="glass">
-          <h2>Update Platform Fee (%)</h2>
-          <form id="updateFeeForm">
-            <input class="form-input" id="newFee" type="number" min="0" max="10" step="0.01" required placeholder="New fee % (max 10)">
-            <button class="form-btn" type="submit">Update</button>
-            <button class="form-btn" type="button" onclick="render()" style="background:#222;color:#00ffb3;">Cancel</button>
-          </form>
-        </div>
-      `;
-      document.getElementById("updateFeeForm").onsubmit = async function (e) {
-        e.preventDefault();
-        try {
-          const newFee = parseFloat(document.getElementById("newFee").value);
-          if (isNaN(newFee) || newFee < 0 || newFee > 10) {
-            showMessage("Fee must be between 0 and 10%", "error");
-            return;
-          }
-          await contract.methods
-            .updateFeePercent(Math.round(newFee * 100))
-            .send({ from: userAddress });
-          showMessage("Fee updated!", "success");
-          render();
-        } catch (err) {
-          showMessage("Failed: " + err.message, "error");
-        }
-      };
-    };
-
-    window.showUpdateCollectorForm = function () {
-      const main = document.getElementById("main");
-      main.innerHTML = `
-        <div class="glass">
-          <h2>Update Fee Collector</h2>
-          <form id="updateCollectorForm">
-            <input class="form-input" id="newCollector" required placeholder="New collector address">
-            <button class="form-btn" type="submit">Update</button>
-            <button class="form-btn" type="button" onclick="render()" style="background:#222;color:#00ffb3;">Cancel</button>
-          </form>
-        </div>
-      `;
-      document.getElementById("updateCollectorForm").onsubmit = async function (e) {
-        e.preventDefault();
-        try {
-          const newCollector = document.getElementById("newCollector").value;
-          await contract.methods
-            .updateFeeCollector(newCollector)
-            .send({ from: userAddress });
-          showMessage("Collector updated!", "success");
-          render();
-        } catch (err) {
-          showMessage("Failed: " + err.message, "error");
-        }
-      };
-    };
-
-    window.pauseContract = async function () {
-      try {
-        await contract.methods.pause().send({ from: userAddress });
-        showMessage("Contract paused!", "success");
-        render();
-      } catch (err) {
-        showMessage("Failed: " + err.message, "error");
-      }
-    };
-    window.unpauseContract = async function () {
-      try {
-        await contract.methods.unpause().send({ from: userAddress });
-        showMessage("Contract unpaused!", "success");
-        render();
-      } catch (err) {
-        showMessage("Failed: " + err.message, "error");
-      }
-    };
-    window.emergencyWithdraw = async function () {
-      try {
-        await contract.methods.emergencyWithdraw().send({ from: userAddress });
-        showMessage("All profits withdrawn to your wallet!", "success");
-        render();
-      } catch (err) {
-        showMessage("Failed: " + err.message, "error");
-      }
-    };
-
-    // ---- RENDER DASHBOARD ----
-    async function render() {
-      const main = document.getElementById('main');
-      if (!userAddress) {
-        main.innerHTML = `<div class="glass" style="text-align:center;">Connect your wallet to view and manage escrows.</div>`;
-        return;
-      }
-      if (isLoading) {
-        main.innerHTML = `<div class="glass" style="text-align:center;">Loading... <span class="loading"></span></div>`;
-        return;
-      }
-      // Dashboard, create form, escrow list, etc.
-      let html = `
-        <div class="glass">
-          <h2 style="margin-bottom:18px;">Your Escrows</h2>
-          <button class="wallet-btn" onclick="showCreateEscrowForm()">+ Create Escrow</button>
-          <div style="margin:18px 0;">
-            ${escrows.length === 0 ? '<div>No escrows found.</div>' : escrows.map(e => `
-              <div class="escrow-card" onclick="showEscrowDetail('${e.id}')">
-                <span class="escrow-id">#${e.id}</span>
-                <span class="escrow-state">${STATE_LABELS[e.state]}</span>
-                <span class="escrow-amount">${formatEth(e.amount)} MON</span>
-                <div style="color:#ffe066;font-size:0.95em;">${e.description}</div>
-              </div>
-            `).join('')}
-          </div>
-        </div>
-      `;
-      // Add admin panel if owner
-      if (contract && userAddress) {
-        html += await renderAdminPanel();
-      }
-      main.innerHTML = html;
-    }
-
-    // ---- CREATE ESCROW FORM ----
-    window.showCreateEscrowForm = function() {
-      const main = document.getElementById('main');
-      main.innerHTML = `
-        <div class="glass">
-          <h2>Create New Escrow</h2>
-          <form id="createEscrowForm">
-            <div class="form-group">
-              <label class="form-label">Seller Address</label>
-              <input class="form-input" id="seller" required placeholder="0x...">
-            </div>
-            <div class="form-group">
-              <label class="form-label">Arbiter Address</label>
-              <input class="form-input" id="arbiter" required placeholder="0x...">
-            </div>
-            <div class="form-group">
-              <label class="form-label">Amount (MON)</label>
-              <input class="form-input" id="amount" type="number" min="0.001" step="0.001" required>
-            </div>
-            <div class="form-group">
-              <label class="form-label">Description</label>
-              <textarea class="form-textarea" id="desc" required></textarea>
-            </div>
-            <button class="form-btn" type="submit">Create & Deposit</button>
-            <button class="form-btn" type="button" onclick="render()" style="background:#222;color:#00ffb3;">Cancel</button>
-          </form>
-        </div>
-      `;
-      document.getElementById('createEscrowForm').onsubmit = async function(e) {
-        e.preventDefault();
-        try {
-          const seller = document.getElementById('seller').value;
-          const arbiter = document.getElementById('arbiter').value;
-          const amount = document.getElementById('amount').value;
-          const desc = document.getElementById('desc').value;
-          showMessage('Creating escrow...', 'info');
-          await contract.methods.createEscrow(seller, arbiter, desc)
-            .send({ from: userAddress, value: web3.utils.toWei(amount, 'ether') });
-          showMessage('Escrow created!', 'success');
-          await loadEscrows();
-        } catch (err) {
-          showMessage('Failed to create escrow: ' + err.message, 'error');
-        }
-      };
-    };
-
-    // ---- ESCROW DETAIL ----
-    window.showEscrowDetail = async function(id) {
-      const e = escrows.find(x => x.id === id);
-      if (!e) return;
-      const main = document.getElementById('main');
-      main.innerHTML = `
-        <div class="glass">
-          <button class="wallet-btn" onclick="render()" style="margin-bottom:18px;background:#222;color:#00ffb3;">← Back</button>
-          <h2>Escrow #${e.id}</h2>
-          <div class="escrow-detail-row"><strong>Buyer:</strong> <span>${formatAddress(e.buyer)}</span></div>
-          <div class="escrow-detail-row"><strong>Seller:</strong> <span>${formatAddress(e.seller)}</span></div>
-          <div class="escrow-detail-row"><strong>Arbiter:</strong> <span>${formatAddress(e.arbiter)}</span></div>
-          <div class="escrow-detail-row"><strong>Amount:</strong> <span>${formatEth(e.amount)} MON</span></div>
-          <div class="escrow-detail-row"><strong>State:</strong> <span>${STATE_LABELS[e.state]}</span></div>
-          <div class="escrow-detail-row"><strong>Description:</strong> <span>${e.description}</span></div>
-          <div class="escrow-detail-row"><strong>Created:</strong> <span>${new Date(e.createdAt*1000).toLocaleString()}</span></div>
-          <div class="escrow-actions" style="margin-top:24px;">
-            ${renderEscrowActions(e)}
-          </div>
-        </div>
-      `;
-    };
-
-    function renderEscrowActions(e) {
-      let html = '';
-      if (userAddress && e.buyer.toLowerCase() === userAddress.toLowerCase() && e.state === 0) {
-        html += `<button class="form-btn" onclick="confirmDelivery('${e.id}')">Confirm Delivery</button>`;
-        html += `<button class="form-btn" onclick="requestRefund('${e.id}')">Request Refund</button>`;
-      }
-      if (userAddress && e.seller.toLowerCase() === userAddress.toLowerCase() && e.state === 2) {
-        html += `<button class="form-btn" onclick="approveRefund('${e.id}')">Approve Refund</button>`;
-      }
-      if (userAddress && e.arbiter.toLowerCase() === userAddress.toLowerCase() && e.state === 2) {
-        html += `<button class="form-btn" onclick="resolveDispute('${e.id}', true)">Release to Buyer</button>`;
-        html += `<button class="form-btn" onclick="resolveDispute('${e.id}', false)">Release to Seller</button>`;
-      }
-      if (!html) html = `<span style="color:#ffe066;">No actions available.</span>`;
-      return html;
-    }
-
-    window.confirmDelivery = async function(id) {
-      try {
-        showMessage('Confirming delivery...', 'info');
-        await contract.methods.confirmDelivery(id).send({ from: userAddress });
-        showMessage('Delivery confirmed!', 'success');
-        await loadEscrows();
-      } catch (err) {
-        showMessage('Failed: ' + err.message, 'error');
-      }
-    };
-    window.requestRefund = async function(id) {
-      try {
-        showMessage('Requesting refund...', 'info');
-        await contract.methods.requestRefund(id).send({ from: userAddress });
-        showMessage('Refund requested!', 'success');
-        await loadEscrows();
-      } catch (err) {
-        showMessage('Failed: ' + err.message, 'error');
-      }
-    };
-    window.approveRefund = async function(id) {
-      try {
-        showMessage('Approving refund...', 'info');
-        await contract.methods.approveRefund(id).send({ from: userAddress });
-        showMessage('Refund approved!', 'success');
-        await loadEscrows();
-      } catch (err) {
-        showMessage('Failed: ' + err.message, 'error');
-      }
-    };
-    window.resolveDispute = async function(id, toBuyer) {
-      try {
-        showMessage('Resolving dispute...', 'info');
-        await contract.methods.resolveDispute(id, toBuyer).send({ from: userAddress });
-        showMessage('Dispute resolved!', 'success');
-        await loadEscrows();
-      } catch (err) {
-        showMessage('Failed: ' + err.message, 'error');
-      }
-    };
-
-    // ---- AUTO-CONNECT IF ALREADY CONNECTED ----
-    window.addEventListener('DOMContentLoaded', async () => {
-      if (window.ethereum && window.ethereum.selectedAddress) {
-        await connectWallet();
-      } else {
-        render();
-      }
-    });
   </script>
 </body>
 </html>
