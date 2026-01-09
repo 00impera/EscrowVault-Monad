@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://brown-left-viper-691.mypinata.cloud/ipfs/bafybeiarjogrmlafa7t4tzyukv633iy4lf7nxtyqm6jzg2zpkweldfsiru" alt="Dragon Escrow Vault Logo" width="120" />
+  <img src="NEW_LOGO_URL" alt="Dragon Escrow Vault Logo" width="120" />
 </p>
 
 <h1 align="center">Dragon Escrow Vault</h1>
