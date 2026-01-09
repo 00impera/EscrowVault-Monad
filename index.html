@@ -3,158 +3,242 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Dragon Escrow Vault — Monad Dashboard</title>
+  <title>Dragon Escrow Vault — Compact Dashboard</title>
   <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/web3/1.10.0/web3.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@web3auth/modal@8.0.0/dist/modal.umd.min.js"></script>
+
   <style>
-    /* (styles unchanged from previous file, omitted here for brevity) */
-    :root{--carbon:#0D0D0D;--neon-blue:#0AB3FF;--neon-purple:#6A00F4;--neon-green:#00ff99;--neon-gold:#ffe066;--neon-red:#ff4444;--panel:linear-gradient(135deg,#0AB3FF 0%,#6A00F4 100%);--panel-muted:linear-gradient(135deg,#23233b 0%,#1a1a2e 100%);--btn-gradient:linear-gradient(90deg,#6A00F4 0%,#0AB3FF 100%);--btn-glow:0 0 16px #0AB3FF,0 0 32px #6A00F4;--border:2px solid #23233b;--shadow:0 0 24px #0AB3FF44}*{margin:0;padding:0;box-sizing:border-box}body{font-family:'Share Tech Mono',monospace;background:var(--carbon);min-height:100vh;color:var(--neon-gold);padding:20px;position:relative;letter-spacing:.02em}/* keep rest of CSS identical to your previous file for brevity */ 
-    .container{max-width:1400px;margin:0 auto;position:relative;z-index:1}
-    h1{background:linear-gradient(90deg,#6A00F4 0%,#0AB3FF 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;text-align:center;margin-bottom:18px;font-size:2em;filter:drop-shadow(0 0 20px #0AB3FF88);animation: pulse 3s ease-in-out infinite}
-    .grid { display: grid; grid-template-columns: 1fr 420px; gap: 18px; align-items:start; }
-    .panel { background: var(--panel-muted); border-radius: 12px; padding: 18px; box-shadow: var(--shadow); border: var(--border); }
-    .small { font-size:0.9em }
-    .form-row { display:flex; gap:10px; margin-bottom:8px; align-items:center }
-    .form-row input, .form-row select, .form-row textarea { flex:1; padding:8px; border-radius:8px; border:1px solid #222; background:#0b0b12; color:var(--neon-gold); font-family:inherit }
-    .actions { display:flex; gap:8px; margin-top:8px; }
-    .escrow-list { margin-top:12px; display:flex; flex-direction:column; gap:8px }
-    .escrow-card { padding:12px; border-radius:8px; background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.00)); border:1px solid #222; display:flex; justify-content:space-between; gap:8px; align-items:center }
-    .muted { color:#8b8b8b; font-size:0.9em }
-    .danger { background: linear-gradient(90deg,#ff4444 0%, #6A00F4 100%); border-color:#ff4444 }
-    @media (max-width: 980px) { .grid { grid-template-columns: 1fr } h1{font-size:1.6em} }
+    :root {
+      --bg: #0b0b0c;
+      --panel-bg: rgba(255,255,255,0.03);
+      --panel-border: rgba(255,255,255,0.06);
+      --text: #e6e6e6;
+      --muted: #9aa4a6;
+      --glass-blur: 8px;
+      --accent-1: #00ff99; /* neon green default */
+      --accent-2: #0AB3FF; /* neon blue default */
+      --accent-glow: 0 0 18px rgba(10,179,255,0.18);
+      --btn-bg: linear-gradient(90deg,var(--accent-1),var(--accent-2));
+      --shadow: 0 6px 20px rgba(0,0,0,0.6);
+      --max-width: 1100px;
+      --base-font-size: 13px;
+    }
+
+    /* Theme Blue */
+    .theme-blue {
+      --accent-1: #0AB3FF;
+      --accent-2: #6A00F4;
+      --btn-bg: linear-gradient(90deg,var(--accent-1),var(--accent-2));
+      --accent-glow: 0 0 20px rgba(10,179,255,0.22);
+    }
+
+    /* Theme Green */
+    .theme-green {
+      --accent-1: #00ff99;
+      --accent-2: #00e6a8;
+      --btn-bg: linear-gradient(90deg,var(--accent-1),#00c88a);
+      --accent-glow: 0 0 20px rgba(0,255,153,0.16);
+    }
+
+    * { box-sizing: border-box; }
+    html,body { height:100%; margin:0; padding:0; font-family:'Share Tech Mono', monospace; background:var(--bg); color:var(--text); -webkit-font-smoothing:antialiased; font-size:var(--base-font-size); }
+    .container { max-width:var(--max-width); margin:18px auto; padding:12px; position:relative; }
+
+    header { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:12px; }
+    h1 { font-size:1.1rem; margin:0; letter-spacing:0.04em; color:var(--text); text-transform:uppercase; }
+    .top-controls { display:flex; gap:8px; align-items:center; }
+
+    /* Compact buttons */
+    .btn, .wallet-btn {
+      background: var(--btn-bg);
+      border: 1px solid rgba(255,255,255,0.06);
+      color: #061019;
+      padding:8px 10px;
+      font-weight:700;
+      border-radius:8px;
+      cursor:pointer;
+      box-shadow: var(--accent-glow);
+      transition: transform .12s ease, opacity .12s;
+      font-size: .9rem;
+    }
+    .btn.ghost {
+      background: transparent;
+      color: var(--text);
+      border: 1px solid var(--panel-border);
+      box-shadow: none;
+    }
+    .btn:active { transform: translateY(1px) scale(.998); }
+
+    .grid { display:grid; grid-template-columns: 1fr 360px; gap:12px; align-items:start; }
+    @media (max-width:980px) { .grid { grid-template-columns: 1fr; } }
+
+    .panel {
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      border: 1px solid var(--panel-border);
+      border-radius: 10px;
+      padding: 12px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(var(--glass-blur));
+    }
+
+    /* Wallet / create compact layout */
+    .wallet-row { display:flex; gap:8px; align-items:center; margin-bottom:8px; }
+    .wallet-info { display:flex; flex-direction:column; gap:4px; font-size:.9rem; color:var(--muted); }
+    .wallet-indicator { width:10px; height:10px; border-radius:50%; background:rgba(255,0,0,0.6); box-shadow:0 0 6px rgba(255,0,0,0.14); margin-right:8px; }
+
+    input[type=text], input[type=number], textarea {
+      width:100%; padding:8px 10px; border-radius:8px; border:1px solid rgba(255,255,255,0.04);
+      background: rgba(0,0,0,0.45); color:var(--text); font-family:inherit; font-size:.95rem;
+    }
+    textarea { resize:vertical; min-height:46px; max-height:120px; }
+
+    .row { display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px dashed rgba(255,255,255,0.02); }
+    .row:last-child { border-bottom: none; }
+
+    .small { font-size:.85rem; color:var(--muted); }
+    .muted { color:var(--muted); }
+
+    /* LCD compact */
+    .lcd-rows { display:flex; flex-direction:column; gap:6px; margin-top:8px; }
+    .lcd-item { display:flex; justify-content:space-between; gap:8px; padding:6px 4px; align-items:center; font-size:.95rem; }
+    .lcd-value { color:var(--text); font-weight:700; }
+
+    /* Escrow list scrollable & compact */
+    .escrow-list { max-height:320px; overflow:auto; display:flex; flex-direction:column; gap:8px; padding-right:6px; margin-top:8px; }
+    .escrow-card { display:flex; justify-content:space-between; gap:8px; padding:8px; border-radius:8px; background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(0,0,0,0.05)); border:1px solid rgba(255,255,255,0.02); }
+    .escrow-meta { font-size:.85rem; color:var(--muted); }
+    .escrow-actions { display:flex; gap:6px; align-items:center; }
+
+    /* Admin compact */
+    .admin-panel .form-row { display:flex; gap:8px; align-items:center; }
+    .admin-panel .danger { background: linear-gradient(90deg,#ff444433, rgba(255,0,0,0.06)); color:#fff; border:1px solid rgba(255,0,0,0.12); }
+
+    footer { margin-top:12px; text-align:center; color:var(--muted); font-size:.8rem; }
+
+    /* Logo */
+    .logo { width:56px; height:56px; border-radius:10px; object-fit:cover; border:1px solid rgba(255,255,255,0.04); }
+
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>🐉 DRAGON ESCROW VAULT — DASHBOARD</h1>
+    <header>
+      <div style="display:flex;align-items:center;gap:12px">
+        <img src="https://brown-left-viper-691.mypinata.cloud/ipfs/bafybeiarjogrmlafa7t4tzyukv633iy4lf7nxtyqm6jzg2zpkweldfsiru" class="logo" alt="Dragon Logo" />
+        <div>
+          <h1>Dragon Escrow Vault</h1>
+          <div class="small muted">Compact dashboard — Monad</div>
+        </div>
+      </div>
+
+      <div class="top-controls">
+        <button id="themeToggle" class="btn ghost">Toggle Theme</button>
+        <button id="refreshBtnTop" class="btn ghost">Refresh</button>
+      </div>
+    </header>
 
     <div class="grid">
-      <div>
-        <!-- Wallet + Actions + Create Escrow + My Escrows -->
-        <div class="panel" id="walletPanel">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-            <div><strong class="small">Wallet</strong></div>
-            <div class="small muted" id="networkBadge">Chain: -</div>
+      <main>
+        <div class="panel">
+          <div class="wallet-row" style="justify-content:space-between;">
+            <div style="display:flex;align-items:center;gap:8px">
+              <div class="wallet-indicator" id="indicator" style="background:rgba(255,68,68,0.6)"></div>
+              <div>
+                <div class="small">Wallet</div>
+                <div id="statusText" style="font-weight:700;color:var(--text)">NOT CONNECTED</div>
+              </div>
+            </div>
+            <div style="display:flex;gap:8px">
+              <button class="wallet-btn" id="metamaskBtn">MetaMask</button>
+              <button class="wallet-btn" id="web3authBtn">Web3Auth</button>
+              <button class="btn ghost" id="disconnectBtn">Disconnect</button>
+            </div>
           </div>
 
-          <div style="display:flex;gap:8px;margin-bottom:12px">
-            <button class="wallet-btn" id="metamaskBtn">🦊 MetaMask</button>
-            <button class="wallet-btn" id="web3authBtn">🔐 Web3Auth</button>
-            <button class="btn btn-disconnect" id="disconnectBtn">Disconnect</button>
-          </div>
-
-          <div id="walletInfo" style="display:none;margin-top:10px">
-            <div class="form-row"><span class="muted">Address</span><span id="userAddr">-</span></div>
-            <div class="form-row"><span class="muted">Balance</span><span id="userBal">-</span></div>
+          <div id="walletInfo" class="wallet-info" style="margin-top:8px; display:none;">
+            <div class="small muted">Address <span id="userAddr" style="color:var(--text);font-weight:700">-</span></div>
+            <div class="small muted">Balance <span id="userBal" style="color:var(--text);font-weight:700">-</span></div>
             <div id="adminBadge"></div>
           </div>
         </div>
 
-        <div class="panel" id="createPanel" style="margin-top:12px">
+        <div class="panel" style="margin-top:10px;">
           <div style="display:flex;justify-content:space-between;align-items:center">
-            <strong>Create Escrow (payable)</strong>
-            <span class="muted small">createEscrow(seller, arbiter, description) + value</span>
+            <div><strong>Create Escrow</strong><div class="small muted">createEscrow(seller, arbiter, description) + value</div></div>
+            <div class="small muted">Payable</div>
           </div>
-          <div style="margin-top:10px">
-            <div class="form-row">
-              <input id="sellerAddr" placeholder="Seller address (0x...)" />
-            </div>
-            <div class="form-row">
-              <input id="arbiterAddr" placeholder="Arbiter address (optional)" />
-            </div>
-            <div class="form-row">
-              <input id="amountMon" placeholder="Amount (MON)" />
-            </div>
-            <div class="form-row">
-              <textarea id="escrowDesc" placeholder="Description" rows="2"></textarea>
-            </div>
-            <div class="actions">
-              <button class="btn" id="createBtn">Create Escrow & Pay</button>
-              <button class="btn" id="refreshMyEscrows">Refresh My Escrows</button>
+
+          <div style="margin-top:8px;">
+            <div class="form-row" style="margin-bottom:6px;"><input id="sellerAddr" type="text" placeholder="Seller address (0x...)" /></div>
+            <div class="form-row" style="margin-bottom:6px;"><input id="arbiterAddr" type="text" placeholder="Arbiter address (optional)" /></div>
+            <div class="form-row" style="margin-bottom:6px;"><input id="amountMon" type="number" step="any" placeholder="Amount (MON)" /></div>
+            <div class="form-row" style="margin-bottom:6px;"><textarea id="escrowDesc" placeholder="Description"></textarea></div>
+            <div style="display:flex;gap:8px;">
+              <button class="btn" id="createBtn">Create & Pay</button>
+              <button class="btn ghost" id="refreshMyEscrows">Refresh My Escrows</button>
             </div>
           </div>
         </div>
 
-        <div class="panel" id="myEscrowsPanel" style="margin-top:12px">
-          <div style="display:flex;justify-content:space-between;align-items:center">
-            <strong>My Escrows</strong>
-            <span class="muted small">getUserEscrows(address) → getEscrow(id)</span>
+        <div class="panel" style="margin-top:10px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <div><strong>My Escrows</strong><div class="small muted">getUserEscrows → getEscrow</div></div>
+            <div class="small muted">Actions</div>
           </div>
-          <div id="escrowList" class="escrow-list">
-            <!-- populated dynamically -->
+
+          <div id="escrowList" class="escrow-list" aria-live="polite">
+            <div class="muted">Connect wallet to load escrows</div>
           </div>
-          <div style="margin-top:10px" class="small muted">Tip: click an action to send a transaction. Watch messages at the bottom.</div>
         </div>
-      </div>
+      </main>
 
       <aside>
-        <!-- Dashboard + Admin -->
-        <div class="panel" id="lcd">
-          <img src="https://brown-left-viper-691.mypinata.cloud/ipfs/bafybeiarjogrmlafa7t4tzyukv633iy4lf7nxtyqm6jzg2zpkweldfsiru" class="logo" alt="Dragon Logo" style="width:72px;height:72px" />
-          <div style="margin-top:8px"><strong>LIVE LCD</strong></div>
-          <div style="margin-top:10px">
-            <div class="form-row"><span class="muted">Platform Fee</span><span id="fee">...</span></div>
-            <div class="form-row"><span class="muted">Total Fees</span><span id="total">...</span></div>
-            <div class="form-row"><span class="muted">Fee Collector</span><span id="collector">...</span></div>
-            <div class="form-row"><span class="muted">Status</span><span id="status">...</span></div>
-            <div class="form-row"><span class="muted">Owner</span><span id="owner">...</span></div>
-            <div class="form-row"><span class="muted">Escrows</span><span id="count">...</span></div>
-            <div class="form-row"><span class="muted">Block</span><span id="block">...</span></div>
-            <div class="form-row"><span class="muted">Gas</span><span id="gasPrice">...</span></div>
-            <div style="margin-top:8px"><button class="btn" id="refreshBtn">Refresh Dashboard</button></div>
+        <div class="panel">
+          <div style="display:flex;align-items:center;justify-content:space-between;">
+            <div><strong>LIVE LCD</strong><div class="small muted">Contract snapshot</div></div>
+            <div class="small muted" id="networkBadge">Chain: ?</div>
+          </div>
+
+          <div class="lcd-rows">
+            <div class="lcd-item"><div class="small muted">Platform Fee</div><div class="lcd-value" id="fee">...</div></div>
+            <div class="lcd-item"><div class="small muted">Total Fees</div><div class="lcd-value" id="total">...</div></div>
+            <div class="lcd-item"><div class="small muted">Fee Collector</div><div class="lcd-value" id="collector">...</div></div>
+            <div class="lcd-item"><div class="small muted">Status</div><div class="lcd-value" id="status">...</div></div>
+            <div class="lcd-item"><div class="small muted">Owner</div><div class="lcd-value" id="owner">...</div></div>
+            <div class="lcd-item"><div class="small muted">Escrows</div><div class="lcd-value" id="count">...</div></div>
+            <div class="lcd-item"><div class="small muted">Block</div><div class="lcd-value" id="block">...</div></div>
+            <div class="lcd-item"><div class="small muted">Gas</div><div class="lcd-value" id="gasPrice">...</div></div>
           </div>
         </div>
 
-        <div class="panel" id="adminPanel" style="margin-top:12px; display:none">
-          <div style="display:flex;justify-content:space-between;align-items:center">
-            <strong>Admin / Owner Panel</strong>
-            <span class="muted small">Owner-only controls</span>
+        <div class="panel admin-panel" id="adminPanel" style="margin-top:10px; display:none;">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <div><strong>Admin</strong><div class="small muted">Owner controls</div></div>
+            <div class="small muted">⚠️</div>
           </div>
 
-          <div style="margin-top:8px">
-            <div class="form-row">
-              <input id="newFeePercent" placeholder="New fee % (e.g. 2.5)" />
-              <button class="btn" id="updateFeeBtn">Update Fee</button>
-            </div>
-            <div class="form-row">
-              <input id="newCollector" placeholder="New fee collector address" />
-              <button class="btn" id="updateCollectorBtn">Update Collector</button>
-            </div>
-
-            <div style="display:flex;gap:8px;margin-top:8px">
-              <button class="btn" id="pauseBtn">Pause</button>
-              <button class="btn" id="unpauseBtn">Unpause</button>
-            </div>
-
-            <div style="margin-top:8px" class="small muted">
-              Danger zone
-            </div>
-            <div style="display:flex;gap:8px;margin-top:8px">
-              <button class="btn danger" id="emergencyWithdrawBtn">Emergency Withdraw</button>
-            </div>
-
-            <div style="margin-top:8px" class="form-row">
-              <input id="transferTo" placeholder="Transfer ownership to (address)" />
-              <button class="btn" id="transferOwnerBtn">Transfer Ownership</button>
-            </div>
-
-            <div style="margin-top:8px" class="form-row">
-              <input id="upgradeImpl" placeholder="New implementation address (upgradeTo)" />
-              <button class="btn" id="upgradeBtn">Upgrade</button>
-            </div>
-            <div style="margin-top:8px" class="muted small">Note: Upgrades are powerful — double-check addresses and only use if you control the owner key.</div>
+          <div style="margin-top:8px;">
+            <div class="form-row"><input id="newFeePercent" placeholder="New fee % (e.g. 2.5)" /><button class="btn" id="updateFeeBtn">Update</button></div>
+            <div class="form-row"><input id="newCollector" placeholder="New fee collector" /><button class="btn" id="updateCollectorBtn">Set</button></div>
+            <div style="display:flex;gap:8px;margin-top:8px;"><button class="btn" id="pauseBtn">Pause</button><button class="btn" id="unpauseBtn">Unpause</button></div>
+            <div style="margin-top:8px;" class="small muted">Danger zone</div>
+            <div style="display:flex;gap:8px;margin-top:8px;"><button class="btn danger" id="emergencyWithdrawBtn">Emergency Withdraw</button></div>
+            <div class="form-row" style="margin-top:8px;"><input id="transferTo" placeholder="Transfer ownership to" /><button class="btn" id="transferOwnerBtn">Transfer</button></div>
+            <div class="form-row" style="margin-top:8px;"><input id="upgradeImpl" placeholder="New implementation address" /><button class="btn" id="upgradeBtn">Upgrade</button></div>
           </div>
         </div>
 
       </aside>
     </div>
 
-    <div id="msg" style="margin-top:14px"></div>
+    <footer>Dragon Escrow Vault — compact view · built for Monad</footer>
+
+    <div id="msg" style="margin-top:10px"></div>
   </div>
 
   <script>
-    // CONFIG & ABI (unchanged contract address and ABI from your submission)
+    // CONFIG & ABI (unchanged contract address and ABI)
     const CONFIG = {
       addr: "0x49d88eB97341108d9C6868d65a6512a4af3d183b",
       rpc: "https://rpc.monad.xyz",
@@ -166,7 +250,7 @@
       }
     };
 
-    const ABI = [{"inputs":[],"stateMutability":"nonpayable","type":"constructor"},{"inputs":[],"name":"FeePercentTooHigh","type":"error"},{"inputs":[],"name":"InvalidAddress","type":"error"},{"inputs":[],"name":"InvalidAmount","type":"error"},{"inputs":[],"name":"InvalidEscrowId","type":"error"},{"inputs":[],"name":"InvalidState","type":"error"},{"inputs":[],"name":"TransferFailed","type":"error"},{"inputs":[],"name":"UnauthorizedAccess","type":"error"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"address","name":"previousAdmin","type":"address"},{"indexed":false,"internalType":"address","name":"newAdmin","type":"address"}],"name":"AdminChanged","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"beacon","type":"address"}],"name":"BeaconUpgraded","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"escrowId","type":"uint256"}],"name":"DeliveryConfirmed","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"escrowId","type":"uint256"}],"name":"DisputeRaised","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"escrowId","type":"uint256"},{"indexed":true,"internalType":"address","name":"winner","type":"address"}],"name":"DisputeResolved","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"escrowId","type":"uint256"},{"indexed":true,"internalType":"address","name":"buyer","type":"address"},{"indexed":true,"internalType":"address","name":"seller","type":"address"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"}],"name":"EscrowCreated","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"escrowId","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"feeAmount","type":"uint256"}],"name":"FeeCollected","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"address","name":"oldCollector","type":"address"},{"indexed":false,"internalType":"address","name":"newCollector","type":"address"}],"name":"FeeCollectorUpdated","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"uint256","name":"oldPercent","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"newPercent","type":"uint256"}],"name":"FeePercentUpdated","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"escrowId","type":"uint256"},{"indexed":true,"internalType":"address","name":"recipient","type":"address"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"}],"name":"FundsReleased","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"uint8","name":"version","type":"uint8"}],"name":"Initialized","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"previousOwner","type":"address"},{"indexed":true,"internalType":"address","name":"newOwner","type":"address"}],"name":"OwnershipTransferred","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"address","name":"account","type":"address"}],"name":"Paused","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"escrowId","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"}],"name":"PaymentDeposited","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"escrowId","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"}],"name":"Refunded","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"address","name":"account","type":"address"}],"name":"Unpaused","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"implementation","type":"address"}],"name":"Upgraded","type":"event"},{"inputs":[{"internalType":"uint256","name":"_escrowId","type":"uint256"}],"name":"approveRefund","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"_amount","type":"uint256"}],"name":"calculateFee","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"_escrowId","type":"uint256"}],"name":"confirmDelivery","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address payable","name":"_seller","type":"address"},{"internalType":"address","name":"_arbiter","type":"address"},{"internalType":"string","name":"_description","type":"string"}],"name":"createEscrow","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"payable","type":"function"},{"inputs":[],"name":"emergencyWithdraw","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"escrowCount","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"","type":"uint256"}],"name":"escrows","outputs":[{"internalType":"address payable","name":"buyer","type":"address"},{"internalType":"address payable","name":"seller","type":"address"},{"internalType":"address","name":"arbiter","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"},{"internalType":"enum DragonEscrowVault.State","name":"state","type":"uint8"},{"internalType":"uint256","name":"createdAt","type":"uint256"},{"internalType":"string","name":"description","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"feeCollector","outputs":[{"internalType":"address payable","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"feePercent","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"_escrowId","type":"uint256"}],"name":"getEscrow","outputs":[{"internalType":"address","name":"buyer","type":"address"},{"internalType":"address","name":"seller","type":"address"},{"internalType":"address","name":"arbiter","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"},{"internalType":"enum DragonEscrowVault.State","name":"state","type":"uint8"},{"internalType":"uint256","name":"createdAt","type":"uint256"},{"internalType":"string","name":"description","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"_user","type":"address"}],"name":"getUserEscrows","outputs":[{"internalType":"uint256[]","name":"","type":"uint256[]"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address payable","name":"_feeCollector","type":"address"},{"internalType":"uint256","name":"_feePercent","type":"uint256"}],"name":"initialize","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"owner","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"pause","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"paused","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"proxiableUUID","outputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"renounceOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"_escrowId","type":"uint256"}],"name":"requestRefund","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"_escrowId","type":"uint256"},{"internalType":"bool","name":"_releaseToBuyer","type":"bool"}],"name":"resolveDispute","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"totalFeesCollected","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"newOwner","type":"address"}],"name":"transferOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"unpause","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address payable","name":"_newCollector","type":"address"},{"internalType":"uint256","name":"_newFeePercent","type":"uint256"}],"name":"updateFeeCollector","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"_newFeePercent","type":"uint256"}],"name":"updateFeePercent","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"newImplementation","type":"address"}],"name":"upgradeTo","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"newImplementation","type":"address"},{"internalType":"bytes","name":"data","type":"bytes"}],"name":"upgradeToAndCall","outputs":[],"stateMutability":"payable","type":"function"},{"stateMutability":"payable","type":"receive"}];
+    const ABI = /* (ABI unchanged) */ [{"inputs":[],"stateMutability":"nonpayable","type":"constructor"},{"inputs":[],"name":"FeePercentTooHigh","type":"error"},{"inputs":[],"name":"InvalidAddress","type":"error"},{"inputs":[],"name":"InvalidAmount","type":"error"},{"inputs":[],"name":"InvalidEscrowId","type":"error"},{"inputs":[],"name":"InvalidState","type":"error"},{"inputs":[],"name":"TransferFailed","type":"error"},{"inputs":[],"name":"UnauthorizedAccess","type":"error"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"address","name":"previousAdmin","type":"address"},{"indexed":false,"internalType":"address","name":"newAdmin","type":"address"}],"name":"AdminChanged","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"beacon","type":"address"}],"name":"BeaconUpgraded","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"escrowId","type":"uint256"}],"name":"DeliveryConfirmed","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"escrowId","type":"uint256"}],"name":"DisputeRaised","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"escrowId","type":"uint256"},{"indexed":true,"internalType":"address","name":"winner","type":"address"}],"name":"DisputeResolved","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"escrowId","type":"uint256"},{"indexed":true,"internalType":"address","name":"buyer","type":"address"},{"indexed":true,"internalType":"address","name":"seller","type":"address"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"}],"name":"EscrowCreated","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"escrowId","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"feeAmount","type":"uint256"}],"name":"FeeCollected","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"address","name":"oldCollector","type":"address"},{"indexed":false,"internalType":"address","name":"newCollector","type":"address"}],"name":"FeeCollectorUpdated","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"uint256","name":"oldPercent","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"newPercent","type":"uint256"}],"name":"FeePercentUpdated","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"escrowId","type":"uint256"},{"indexed":true,"internalType":"address","name":"recipient","type":"address"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"}],"name":"FundsReleased","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"uint8","name":"version","type":"uint8"}],"name":"Initialized","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"previousOwner","type":"address"},{"indexed":true,"internalType":"address","name":"newOwner","type":"address"}],"name":"OwnershipTransferred","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"address","name":"account","type":"address"}],"name":"Paused","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"escrowId","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"}],"name":"PaymentDeposited","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"escrowId","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"}],"name":"Refunded","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"address","name":"account","type":"address"}],"name":"Unpaused","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"implementation","type":"address"}],"name":"Upgraded","type":"event"},{"inputs":[{"internalType":"uint256","name":"_escrowId","type":"uint256"}],"name":"approveRefund","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"_amount","type":"uint256"}],"name":"calculateFee","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"_escrowId","type":"uint256"}],"name":"confirmDelivery","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address payable","name":"_seller","type":"address"},{"internalType":"address","name":"_arbiter","type":"address"},{"internalType":"string","name":"_description","type":"string"}],"name":"createEscrow","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"payable","type":"function"},{"inputs":[],"name":"emergencyWithdraw","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"escrowCount","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"","type":"uint256"}],"name":"escrows","outputs":[{"internalType":"address payable","name":"buyer","type":"address"},{"internalType":"address payable","name":"seller","type":"address"},{"internalType":"address","name":"arbiter","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"},{"internalType":"enum DragonEscrowVault.State","name":"state","type":"uint8"},{"internalType":"uint256","name":"createdAt","type":"uint256"},{"internalType":"string","name":"description","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"feeCollector","outputs":[{"internalType":"address payable","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"feePercent","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"_escrowId","type":"uint256"}],"name":"getEscrow","outputs":[{"internalType":"address","name":"buyer","type":"address"},{"internalType":"address","name":"seller","type":"address"},{"internalType":"address","name":"arbiter","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"},{"internalType":"enum DragonEscrowVault.State","name":"state","type":"uint8"},{"internalType":"uint256","name":"createdAt","type":"uint256"},{"internalType":"string","name":"description","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"_user","type":"address"}],"name":"getUserEscrows","outputs":[{"internalType":"uint256[]","name":"","type":"uint256[]"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address payable","name":"_feeCollector","type":"address"},{"internalType":"uint256","name":"_feePercent","type":"uint256"}],"name":"initialize","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"owner","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"pause","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"paused","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"proxiableUUID","outputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"renounceOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"_escrowId","type":"uint256"}],"name":"requestRefund","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"_escrowId","type":"uint256"},{"internalType":"bool","name":"_releaseToBuyer","type":"bool"}],"name":"resolveDispute","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"totalFeesCollected","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"newOwner","type":"address"}],"name":"transferOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"unpause","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address payable","name":"_newCollector","type":"address"},{"internalType":"uint256","name":"_newFeePercent","type":"uint256"}],"name":"updateFeeCollector","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"_newFeePercent","type":"uint256"}],"name":"updateFeePercent","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"newImplementation","type":"address"}],"name":"upgradeTo","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"newImplementation","type":"address"},{"internalType":"bytes","name":"data","type":"bytes"}],"name":"upgradeToAndCall","outputs":[],"stateMutability":"payable","type":"function"},{"stateMutability":"payable","type":"receive"}];
 
     // GLOBALS
     let w3 = new Web3(CONFIG.rpc);
@@ -174,11 +258,34 @@
     let userAddr = null;
     let web3auth = null;
 
+    // THEME: load saved theme or default to green
+    (function initTheme(){
+      const saved = localStorage.getItem('dex_theme') || 'green';
+      document.documentElement.classList.toggle('theme-green', saved === 'green');
+      document.documentElement.classList.toggle('theme-blue', saved === 'blue');
+      document.getElementById && (document.getElementById('themeToggle') && (document.getElementById('themeToggle').textContent = saved === 'green' ? 'Theme: Green' : 'Theme: Blue'));
+    })();
+
+    function toggleTheme() {
+      const isGreen = document.documentElement.classList.contains('theme-green');
+      if (isGreen) {
+        document.documentElement.classList.remove('theme-green');
+        document.documentElement.classList.add('theme-blue');
+        localStorage.setItem('dex_theme','blue');
+        document.getElementById('themeToggle').textContent = 'Theme: Blue';
+      } else {
+        document.documentElement.classList.remove('theme-blue');
+        document.documentElement.classList.add('theme-green');
+        localStorage.setItem('dex_theme','green');
+        document.getElementById('themeToggle').textContent = 'Theme: Green';
+      }
+    }
+
     // HELPERS: UI & messages
-    function showMsg(text, type = 'info', timeout = 6000) {
+    function showMsg(text, type = 'info', timeout = 5000) {
       const el = document.getElementById('msg');
-      const cls = type === 'error' ? 'msg-error' : type === 'success' ? 'msg-success' : 'msg-info';
-      el.innerHTML = `<div class="msg ${cls}">${text}</div>`;
+      const color = type === 'error' ? 'color:#ffb3b3' : type === 'success' ? 'color:#b7ffcf' : 'color:var(--muted)';
+      el.innerHTML = `<div style="${color};font-weight:700">${text}</div>`;
       if (timeout) setTimeout(()=>{ el.innerHTML = '' }, timeout);
     }
 
@@ -188,18 +295,18 @@
     async function safeSend(txMethod, opts = {}) {
       const { from, value = 0 } = opts;
       try {
-        showMsg('Estimating gas...', 'info', 3000);
+        showMsg('Estimating gas...', 'info', 2000);
         const gas = await txMethod.estimateGas({ from, value }).catch(e => {
           throw new Error('Gas estimation failed: ' + (e.message || e));
         });
         const sent = txMethod.send({ from, value, gas });
         return await new Promise((resolve, reject) => {
           sent.on('transactionHash', hash => {
-            showMsg('Tx submitted: ' + hash, 'info', 8000);
+            showMsg('Tx submitted: ' + hash, 'info', 6000);
             console.log('txHash', hash);
           });
           sent.on('receipt', receipt => {
-            showMsg('Tx mined: ' + receipt.transactionHash, 'success', 8000);
+            showMsg('Tx mined: ' + receipt.transactionHash, 'success', 6000);
             resolve(receipt);
           });
           sent.on('error', err => {
@@ -208,7 +315,7 @@
         });
       } catch (err) {
         console.error(err);
-        showMsg('Transaction failed: ' + (err.message || err), 'error', 8000);
+        showMsg('Transaction failed: ' + (err.message || err), 'error', 6000);
         throw err;
       }
     }
@@ -235,9 +342,10 @@
         document.getElementById('count').textContent = Number(escrowCount).toLocaleString();
         document.getElementById('block').textContent = Number(blockNumber).toLocaleString();
         document.getElementById('gasPrice').textContent = (Number(gasPrice)/1e9).toFixed(2) + ' Gwei';
+        document.getElementById('networkBadge').textContent = 'Chain: ' + (CONFIG.chainIdDec || '?');
       } catch (err) {
         console.error('Dashboard load error', err);
-        showMsg('Failed loading dashboard: ' + (err.message || err), 'error', 5000);
+        showMsg('Failed loading dashboard: ' + (err.message || err), 'error', 4000);
       }
     }
 
@@ -254,7 +362,6 @@
       try {
         const txMethod = contract.methods.createEscrow(seller, arbiter, desc);
         const receipt = await safeSend(txMethod, { from: userAddr, value });
-        // Optionally, read events or parse return value if available
         loadDashboard(); loadMyEscrows();
         return receipt;
       } catch (err) {
@@ -272,88 +379,42 @@
         const ids = await contract.methods.getUserEscrows(userAddr).call();
         if (!ids || ids.length === 0) { listEl.innerHTML = '<div class="muted">No escrows found</div>'; return; }
         listEl.innerHTML = '';
-        // for each id, fetch getEscrow and show actions
         for (const id of ids) {
           const escrow = await contract.methods.getEscrow(id).call();
           const card = document.createElement('div');
           card.className = 'escrow-card';
           const left = document.createElement('div');
-          left.innerHTML = `<div><strong>ID ${id}</strong> <span class="muted">(${new Date(Number(escrow.createdAt)*1000).toLocaleString()})</span></div>
-                            <div class="muted small">Buyer: ${short(escrow.buyer)} — Seller: ${short(escrow.seller)}</div>
-                            <div class="muted small">Arbiter: ${short(escrow.arbiter)} — Amount: ${Number(w3.utils.fromWei(escrow.amount,'ether'))} MON</div>
-                            <div class="muted small">State: ${escrow.state}</div>
-                            <div class="muted small">Desc: ${escrow.description || '-'}</div>`;
+          left.innerHTML = `<div style="font-weight:700">ID ${id} <span class="muted" style="font-weight:400">(${new Date(Number(escrow.createdAt)*1000).toLocaleString()})</span></div>
+                            <div class="escrow-meta">Buyer: ${short(escrow.buyer)} · Seller: ${short(escrow.seller)}</div>
+                            <div class="escrow-meta">Arbiter: ${short(escrow.arbiter)} · ${Number(w3.utils.fromWei(escrow.amount,'ether'))} MON</div>
+                            <div class="escrow-meta">State: ${escrow.state} · Desc: ${escrow.description || '-'}</div>`;
           const right = document.createElement('div');
-          right.style.display = 'flex';
-          right.style.flexDirection = 'column';
-          right.style.gap = '6px';
+          right.className = 'escrow-actions';
 
-          // Actions vary by role and state — we show commonly useful ones
-          const btnConfirm = document.createElement('button');
-          btnConfirm.className = 'btn small';
-          btnConfirm.textContent = 'Confirm Delivery';
-          btnConfirm.onclick = async () => {
-            try {
-              await safeSend(contract.methods.confirmDelivery(id), { from: userAddr });
-              loadMyEscrows(); loadDashboard();
-            } catch (e) {}
+          const makeBtn = (label, fn) => {
+            const b = document.createElement('button');
+            b.className = 'btn';
+            b.style.padding = '6px 8px';
+            b.style.fontSize = '.82rem';
+            b.textContent = label;
+            b.onclick = fn;
+            return b;
           };
 
-          const btnRequestRefund = document.createElement('button');
-          btnRequestRefund.className = 'btn small';
-          btnRequestRefund.textContent = 'Request Refund';
-          btnRequestRefund.onclick = async () => {
-            try {
-              await safeSend(contract.methods.requestRefund(id), { from: userAddr });
-              loadMyEscrows(); loadDashboard();
-            } catch (e) {}
-          };
+          const btnConfirm = makeBtn('Confirm', async () => { await safeSend(contract.methods.confirmDelivery(id), { from: userAddr }); loadMyEscrows(); loadDashboard(); });
+          const btnRequestRefund = makeBtn('Request Refund', async () => { await safeSend(contract.methods.requestRefund(id), { from: userAddr }); loadMyEscrows(); loadDashboard(); });
+          const btnApproveRefund = makeBtn('Approve Rfd', async () => { await safeSend(contract.methods.approveRefund(id), { from: userAddr }); loadMyEscrows(); loadDashboard(); });
+          const btnResolveBuyer = makeBtn('Resolve→Buyer', async () => { await safeSend(contract.methods.resolveDispute(id, true), { from: userAddr }); loadMyEscrows(); loadDashboard(); });
+          const btnResolveSeller = makeBtn('Resolve→Seller', async () => { await safeSend(contract.methods.resolveDispute(id, false), { from: userAddr }); loadMyEscrows(); loadDashboard(); });
 
-          const btnApproveRefund = document.createElement('button');
-          btnApproveRefund.className = 'btn small';
-          btnApproveRefund.textContent = 'Approve Refund';
-          btnApproveRefund.onclick = async () => {
-            try {
-              await safeSend(contract.methods.approveRefund(id), { from: userAddr });
-              loadMyEscrows(); loadDashboard();
-            } catch (e) {}
-          };
-
-          const btnResolveBuyer = document.createElement('button');
-          btnResolveBuyer.className = 'btn small';
-          btnResolveBuyer.textContent = 'Resolve → Buyer';
-          btnResolveBuyer.onclick = async () => {
-            try {
-              await safeSend(contract.methods.resolveDispute(id, true), { from: userAddr });
-              loadMyEscrows(); loadDashboard();
-            } catch (e) {}
-          };
-
-          const btnResolveSeller = document.createElement('button');
-          btnResolveSeller.className = 'btn small';
-          btnResolveSeller.textContent = 'Resolve → Seller';
-          btnResolveSeller.onclick = async () => {
-            try {
-              await safeSend(contract.methods.resolveDispute(id, false), { from: userAddr });
-              loadMyEscrows(); loadDashboard();
-            } catch (e) {}
-          };
-
-          // Add sensible buttons depending on the caller relation
-          // If user is buyer or seller or arbiter show relevant actions
           const isBuyer = userAddr && userAddr.toLowerCase() === escrow.buyer.toLowerCase();
           const isSeller = userAddr && userAddr.toLowerCase() === escrow.seller.toLowerCase();
           const isArbiter = userAddr && userAddr.toLowerCase() === escrow.arbiter.toLowerCase();
-          // push actions in order
+
           if (isBuyer) right.appendChild(btnConfirm);
           right.appendChild(btnRequestRefund);
           if (isArbiter) right.appendChild(btnApproveRefund);
-          if (isArbiter || isSeller || isBuyer) {
-            const wrap = document.createElement('div');
-            wrap.style.display = 'flex'; wrap.style.gap='6px';
-            wrap.appendChild(btnResolveBuyer); wrap.appendChild(btnResolveSeller);
-            right.appendChild(wrap);
-          }
+          if (isArbiter || isSeller || isBuyer) { right.appendChild(btnResolveBuyer); right.appendChild(btnResolveSeller); }
 
           card.appendChild(left); card.appendChild(right);
           listEl.appendChild(card);
@@ -370,56 +431,30 @@
       if (!userAddr) return showMsg('Connect wallet', 'error');
       const val = document.getElementById('newFeePercent').value.trim();
       if (!val || isNaN(val)) return showMsg('Invalid percent', 'error');
-      // frontend accepts percent like 2.5 meaning 2.50% -> stored value = percent * 100 (matching frontend assumption)
       const bp = Math.round(Number(val) * 100);
-      try {
-        await safeSend(contract.methods.updateFeePercent(bp), { from: userAddr });
-        loadDashboard();
-      } catch (e) {}
+      try { await safeSend(contract.methods.updateFeePercent(bp), { from: userAddr }); loadDashboard(); } catch(e) {}
     }
-
     async function updateCollector() {
       if (!userAddr) return showMsg('Connect wallet', 'error');
       const addr = document.getElementById('newCollector').value.trim();
       if (!w3.utils.isAddress(addr)) return showMsg('Invalid address', 'error');
-      try {
-        await safeSend(contract.methods.updateFeeCollector(addr), { from: userAddr });
-        loadDashboard();
-      } catch (e) {}
+      try { await safeSend(contract.methods.updateFeeCollector(addr), { from: userAddr }); loadDashboard(); } catch(e) {}
     }
-
-    async function pauseContract() {
-      try { await safeSend(contract.methods.pause(), { from: userAddr }); loadDashboard(); } catch(e) {}
-    }
-    async function unpauseContract() {
-      try { await safeSend(contract.methods.unpause(), { from: userAddr }); loadDashboard(); } catch(e) {}
-    }
-    async function emergencyWithdraw() {
-      if (!confirm('Emergency withdraw: owner-only. Continue?')) return;
-      try { await safeSend(contract.methods.emergencyWithdraw(), { from: userAddr }); loadDashboard(); } catch(e) {}
-    }
-    async function transferOwnership() {
-      const to = document.getElementById('transferTo').value.trim();
-      if (!w3.utils.isAddress(to)) return showMsg('Invalid address', 'error');
-      try { await safeSend(contract.methods.transferOwnership(to), { from: userAddr }); loadDashboard(); } catch(e) {}
-    }
-    async function upgradeTo() {
-      const impl = document.getElementById('upgradeImpl').value.trim();
-      if (!w3.utils.isAddress(impl)) return showMsg('Invalid implementation address', 'error');
-      if (!confirm('upgradeTo will change implementation. Proceed only if you control the owner account.')) return;
-      try { await safeSend(contract.methods.upgradeTo(impl), { from: userAddr }); loadDashboard(); } catch(e) {}
-    }
+    async function pauseContract() { try { await safeSend(contract.methods.pause(), { from: userAddr }); loadDashboard(); } catch(e) {} }
+    async function unpauseContract() { try { await safeSend(contract.methods.unpause(), { from: userAddr }); loadDashboard(); } catch(e) {} }
+    async function emergencyWithdraw() { if (!confirm('Emergency withdraw: owner-only. Continue?')) return; try { await safeSend(contract.methods.emergencyWithdraw(), { from: userAddr }); loadDashboard(); } catch(e) {} }
+    async function transferOwnership() { const to = document.getElementById('transferTo').value.trim(); if (!w3.utils.isAddress(to)) return showMsg('Invalid address','error'); try { await safeSend(contract.methods.transferOwnership(to), { from: userAddr }); loadDashboard(); } catch(e) {} }
+    async function upgradeTo() { const impl = document.getElementById('upgradeImpl').value.trim(); if (!w3.utils.isAddress(impl)) return showMsg('Invalid implementation address','error'); if (!confirm('upgradeTo will change implementation. Proceed only if you control the owner account.')) return; try { await safeSend(contract.methods.upgradeTo(impl), { from: userAddr }); loadDashboard(); } catch(e) {} }
 
     // EVENTS: subscribe (if provider supports)
     function registerEventListeners() {
       try {
-        // attempt websocket subscription if provider supports. If using RPC HTTP fallback, events won't stream.
-        contract.events.EscrowCreated().on('data', ev => { console.log('EscrowCreated', ev.returnValues); loadDashboard(); loadMyEscrows(); });
-        contract.events.PaymentDeposited().on('data', ev => { console.log('PaymentDeposited', ev.returnValues); loadDashboard(); loadMyEscrows(); });
-        contract.events.FundsReleased().on('data', ev => { console.log('FundsReleased', ev.returnValues); loadDashboard(); loadMyEscrows(); });
-        contract.events.FeeCollected().on('data', ev => { console.log('FeeCollected', ev.returnValues); loadDashboard(); });
+        contract.events.EscrowCreated().on('data', ev => { loadDashboard(); loadMyEscrows(); });
+        contract.events.PaymentDeposited().on('data', ev => { loadDashboard(); loadMyEscrows(); });
+        contract.events.FundsReleased().on('data', ev => { loadDashboard(); loadMyEscrows(); });
+        contract.events.FeeCollected().on('data', ev => { loadDashboard(); });
       } catch (e) {
-        console.warn('Event subscription unavailable with current provider (HTTP RPC). Events will still be visible by manual refresh.', e);
+        console.warn('Event subscription unavailable (HTTP RPC). Manual refresh will still work.', e);
       }
     }
 
@@ -434,7 +469,7 @@
         const owner = await contract.methods.owner().call();
         if (owner.toLowerCase() === userAddr.toLowerCase()) {
           document.getElementById('adminPanel').style.display = 'block';
-          document.getElementById('adminBadge').innerHTML = '<div class="admin-badge">⚡ ADMIN ACCESS ⚡</div>';
+          document.getElementById('adminBadge').innerHTML = '<div style="padding:6px 8px;border-radius:6px;background:linear-gradient(90deg,var(--accent-1),var(--accent-2));color:#031018;font-weight:700">ADMIN</div>';
         } else {
           document.getElementById('adminPanel').style.display = 'none';
           document.getElementById('adminBadge').innerHTML = '';
@@ -465,8 +500,9 @@
         await switchToMonad();
         w3 = new Web3(window.ethereum);
         contract = new w3.eth.Contract(ABI, CONFIG.addr);
-        document.getElementById('networkBadge').textContent = 'Chain: ' + (await w3.eth.getChainId());
-        showMsg('MetaMask connected', 'success', 3000);
+        document.getElementById('indicator').style.background = 'rgba(0,255,153,0.9)';
+        document.getElementById('statusText').textContent = 'CONNECTED (MetaMask)';
+        showMsg('MetaMask connected', 'success', 2500);
         await showWalletInfo();
         loadDashboard(); loadMyEscrows();
         registerEventListeners();
@@ -474,13 +510,13 @@
         window.ethereum.on('chainChanged', () => location.reload());
       } catch (e) {
         console.error(e);
-        showMsg('MetaMask connect failed: ' + (e.message || e), 'error', 5000);
+        showMsg('MetaMask connect failed: ' + (e.message || e), 'error', 4000);
       }
     }
 
     async function connectWeb3Auth() {
       try {
-        showMsg('Initializing Web3Auth...', 'info', 3000);
+        showMsg('Initializing Web3Auth...', 'info', 2000);
         let tries = 0;
         while (!window.Web3auth && tries < 10) { await new Promise(r=>setTimeout(r,200)); tries++; }
         if (!window.Web3auth) { showMsg('Web3Auth SDK not ready', 'error'); return; }
@@ -503,14 +539,15 @@
         contract = new w3.eth.Contract(ABI, CONFIG.addr);
         const accs = await w3.eth.getAccounts();
         userAddr = accs[0];
-        document.getElementById('networkBadge').textContent = 'Chain: ' + (await w3.eth.getChainId());
-        showMsg('Web3Auth connected', 'success', 3000);
+        document.getElementById('indicator').style.background = 'rgba(0,255,153,0.9)';
+        document.getElementById('statusText').textContent = 'CONNECTED (Web3Auth)';
+        showMsg('Web3Auth connected', 'success', 2000);
         await showWalletInfo();
         loadDashboard(); loadMyEscrows();
         registerEventListeners();
       } catch (e) {
         console.error(e);
-        showMsg('Web3Auth failed: ' + (e.message || e), 'error', 5000);
+        showMsg('Web3Auth failed: ' + (e.message || e), 'error', 4000);
       }
     }
 
@@ -521,14 +558,17 @@
       document.getElementById('userAddr').textContent = '-';
       document.getElementById('userBal').textContent = '-';
       document.getElementById('adminPanel').style.display = 'none';
-      showMsg('Disconnected', 'info', 2000);
+      document.getElementById('indicator').style.background = 'rgba(255,68,68,0.6)';
+      document.getElementById('statusText').textContent = 'NOT CONNECTED';
+      showMsg('Disconnected', 'info', 1600);
     }
 
-    // EVENT BINDINGS
+    // BINDINGS
     document.getElementById('metamaskBtn').onclick = connectMetaMask;
     document.getElementById('web3authBtn').onclick = connectWeb3Auth;
     document.getElementById('disconnectBtn').onclick = disconnect;
-    document.getElementById('refreshBtn').onclick = loadDashboard;
+    document.getElementById('refreshBtnTop').onclick = ()=>{ loadDashboard(); loadMyEscrows(); };
+    document.getElementById('themeToggle').onclick = toggleTheme;
     document.getElementById('createBtn').onclick = createEscrowHandler;
     document.getElementById('refreshMyEscrows').onclick = loadMyEscrows;
     document.getElementById('updateFeeBtn').onclick = updateFee;
@@ -539,15 +579,10 @@
     document.getElementById('transferOwnerBtn').onclick = transferOwnership;
     document.getElementById('upgradeBtn').onclick = upgradeTo;
 
-    // INITIAL LOAD
+    // INIT
     window.addEventListener('DOMContentLoaded', async () => {
-      // Set minimal provider state
-      document.getElementById('networkBadge').textContent = 'Chain: ' + (CONFIG.chainIdDec || '?');
       loadDashboard();
-      // No account connected by default; user must connect
     });
-
-    // Auto-refresh dashboard every 15s
     setInterval(loadDashboard, 15000);
   </script>
 </body>
