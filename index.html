@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Dragon Escrow Vault — Web3Auth + Contract Diagnostics (Robust)</title>
+  <title>Dragon Escrow Vault — Web3Auth + Contract Diagnostics (Mainnet)</title>
   <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/web3/1.10.0/web3.min.js"></script>
   <style>
@@ -19,12 +19,11 @@
 </head>
 <body>
   <div class="container">
-    <h2>Dragon Escrow Vault — Diagnostics (Robust loader)</h2>
+    <h2>Dragon Escrow Vault — Diagnostics (Mainnet)</h2>
 
     <div class="notice">
-      This page tries UMD (local-first), then ESM dynamic-import fallbacks, and scans window for any Web3Auth export name.
-      If CDNs are blocked or the package exposes a different symbol, this loader will attempt to find it.
-      Recommended: download assets locally to <code>/libs/</code> if you can't rely on CDNs.
+      Loader tries local UMD/ESM first, then CDN UMD/ESM, and scans window for known Web3Auth symbols.
+      Web3Auth is configured for "mainnet" here (no testnet). Ensure your Web3Auth client in the dashboard is a mainnet client and the app origin is allowed.
     </div>
 
     <div class="grid">
@@ -45,21 +44,21 @@
   </div>
 
   <script>
-    /***** CONFIG *****/
+    /***** CONFIG - MAINNET *****/
     const CONFIG = {
       rpc: "https://rpc.monad.xyz",
       addr: "0x49d88eB97341108d9C6868d65a6512a4af3d183b",
-      chainIdHex: "0x8F",
+      chainIdHex: "0x8F",           // Monad mainnet chain id (hex)
       chainIdDec: 143,
       web3auth: {
         clientId: "BNCSx81g7Ukojfyp47J0kQVSUiEuqRe_6iFBMusUyziWdbwdXDceON7f3WlwQ04h7DvvX1jAFhkocwg-PZ_yWqE",
-        web3AuthNetwork: "sapphire_mainnet"
+        web3AuthNetwork: "mainnet" // <-- switched to mainnet (no testnet)
       },
       explorerTxUrl: (tx) => `https://monadvision.com/tx/${tx}`
     };
 
     /***** ABI (corrected) *****/
-    const ABI = [
+    const ABI = [ /* same corrected ABI as before (omitted here for brevity in this snippet) */ 
       {"inputs":[],"stateMutability":"nonpayable","type":"constructor"},
       {"inputs":[],"name":"FeePercentTooHigh","type":"error"},
       {"inputs":[],"name":"InvalidAddress","type":"error"},
@@ -128,7 +127,7 @@
     };
     const diagAppend = (s) => { elOut('diagLog').innerText += s + '\n'; };
 
-    /***** Robust loader helpers *****/
+    /***** Robust loader helpers (same as before) *****/
     const UMD_URLS = [
       '/libs/modal.umd.min.js',
       'https://cdn.jsdelivr.net/npm/@web3auth/modal@8.0.0/dist/modal.umd.min.js',
@@ -163,7 +162,6 @@
 
     async function tryDynamicEsmImport(url) {
       try {
-        // dynamic import; crossorigin module must be served with proper MIME/CORS
         const mod = await import(/* @vite-ignore */ url);
         console.log('ESM import succeeded from', url, 'exports:', Object.keys(mod));
         return mod.Web3Auth || mod.default || mod.Web3auth || null;
@@ -189,12 +187,10 @@
     }
 
     async function ensureWeb3AuthLoadedRobust() {
-      // If already present
       const already = detectGlobalCtorFromWindow();
       if (already) { log('Web3Auth ctor already on window'); return already; }
 
       const errors = [];
-      // Try UMD scripts (local-first)
       for (const url of UMD_URLS) {
         diagAppend('Probing UMD ' + url);
         const r = await probeUrl(url, 6000);
@@ -213,7 +209,6 @@
         }
       }
 
-      // Try ESM dynamic imports (local-first)
       for (const url of ESM_URLS) {
         diagAppend('Probing ESM ' + url);
         const r = await probeUrl(url, 6000);
@@ -247,7 +242,11 @@
           chainConfig: {
             chainNamespace: "eip155",
             chainId: CONFIG.chainIdHex,
-            rpcTarget: CONFIG.rpc
+            rpcTarget: CONFIG.rpc,
+            displayName: "Monad Mainnet",
+            blockExplorer: "https://monadvision.com",
+            ticker: "MON",
+            tickerName: "Monad"
           }
         });
         if (typeof web3auth.initModal === 'function') {
@@ -269,7 +268,6 @@
       }
     }
 
-    /***** Contract queries and wallet helpers *****/
     async function queryContractViaRPC() {
       log('Querying contract via RPC: ' + CONFIG.addr);
       try {
