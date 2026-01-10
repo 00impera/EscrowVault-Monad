@@ -1,64 +1,227 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Dragon Escrow Vault — Web3Auth + Contract Diagnostics (Mainnet)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Hacker Escrow Vault - Monad Dashboard</title>
   <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/web3/1.10.0/web3.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@web3auth/modal@8.0.0/dist/modal.umd.min.js"></script>
+
   <style>
-    :root{--bg:#0a0e27;--text:#e6eef6}
-    html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font-family:'Share Tech Mono',monospace}
-    .container{max-width:1100px;margin:20px auto;padding:12px}
-    .notice{background:#121427;padding:12px;border-radius:10px;margin-bottom:12px;border:1px solid rgba(255,255,255,0.04)}
-    .btn{padding:8px 10px;border-radius:8px;border:0;cursor:pointer;margin-right:6px}
-    pre{white-space:pre-wrap;background:#061025;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.03)}
-    #diag { margin-top:12px; font-size:.9rem; color:#cbd6e6 }
-    .grid { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:10px; }
+    /* Palette: black / white / green - simplified and responsive */
+    :root{
+      --bg: #000000;            /* black background */
+      --panel-bg: #0a0a0a;      /* slightly off-black for panels */
+      --muted: #bfbfbf;         /* light gray for labels */
+      --text: #ffffff;          /* primary white text */
+      --accent: #00e07a;        /* neon green accent */
+      --accent-2: #00b36a;      /* darker green for depth */
+      --border: 1px solid #0f0f0f;
+      --shadow: 0 8px 20px rgba(0,0,0,0.6);
+      --radius: 12px;
+      --max-w: 1100px;
+      font-synthesis: none;
+    }
+
+    /* Reset */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html,body { height: 100%; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Share Tech Mono', monospace;
+      -webkit-font-smoothing: antialiased;
+      padding: 12px;
+      line-height: 1.2;
+    }
+
+    /* Container & header */
+    .container {
+      max-width: var(--max-w);
+      width: 100%;
+      margin: 0 auto;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    h1 {
+      font-size: 1.6rem;
+      text-align: center;
+      color: var(--text);
+      letter-spacing: 0.06em;
+      margin-bottom: 6px;
+    }
+
+    /* Panels */
+    .wallet, .lcd, .stats { background: linear-gradient(180deg, var(--panel-bg), #050505); border-radius: var(--radius); padding: 14px; box-shadow: var(--shadow); border: var(--border); }
+
+    /* Logo */
+    .logo {
+      display:block;
+      width: 84px;
+      height: 84px;
+      margin: 0 auto 10px;
+      border-radius: 10px;
+      background: linear-gradient(90deg, var(--accent) 0%, var(--accent-2) 100%);
+      border: 2px solid rgba(255,255,255,0.04);
+    }
+
+    .title {
+      text-align:center;
+      color: var(--muted);
+      font-size: 1rem;
+      margin-bottom: 8px;
+    }
+
+    /* Rows and labels */
+    .row { display:flex; justify-content:space-between; align-items:center; padding:10px 8px; margin:8px 0; border-radius:10px; background: transparent; }
+    .label { color: var(--muted); font-size: 0.9rem; }
+    .value { color: var(--text); font-weight: 800; font-size: 0.98rem; }
+
+    .loading { color: var(--muted); }
+
+    /* Wallet area */
+    .wallet-status { display:flex; align-items:center; justify-content:center; gap:10px; margin-bottom:10px; font-weight:800; color:var(--muted); }
+    .indicator { width:12px; height:12px; border-radius:50%; background:#6b6b6b; box-shadow: 0 0 6px rgba(0,0,0,0.6); }
+    .indicator.on { background: var(--accent); box-shadow: 0 0 12px rgba(0,224,122,0.25); }
+
+    .wallet-btns { display:flex; gap:10px; flex-wrap:wrap; }
+    .wallet-btn {
+      flex:1 1 180px;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      gap:8px;
+      padding:12px;
+      border-radius:10px;
+      background: linear-gradient(180deg, rgba(0,224,122,0.08), rgba(0,179,106,0.04));
+      border: 1px solid rgba(255,255,255,0.04);
+      color: var(--text);
+      cursor: pointer;
+      transition: transform .12s ease, box-shadow .12s ease;
+      font-weight:800;
+    }
+    .wallet-btn:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0,224,122,0.06); }
+    .wallet-btn.connected { background: var(--accent); color: #00110a; box-shadow: 0 12px 30px rgba(0,224,122,0.12); }
+
+    .wallet-info { display:none; margin-top:10px; padding:10px; border-radius:10px; background: rgba(255,255,255,0.02); }
+    .wallet-info.show { display:block; }
+
+    /* Stats grid */
+    .stats { display:grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap:10px; }
+    .stat { padding:12px; border-radius:10px; background: transparent; border: 1px solid rgba(255,255,255,0.03); }
+    .stat-label { color: var(--muted); font-size:0.85rem; margin-bottom:6px; }
+    .stat-value { color: var(--text); font-weight:900; font-size:1.1rem; word-break:break-all; }
+
+    /* Buttons */
+    .btn { padding:10px 16px; border-radius:10px; border: none; background: linear-gradient(90deg,var(--accent),var(--accent-2)); color: #00110a; font-weight:900; cursor:pointer; }
+    .btn.ghost { background: transparent; color: var(--muted); border: 1px solid rgba(255,255,255,0.04); box-shadow:none; }
+    .btn.small { padding:8px 10px; font-size:0.9rem; }
+
+    /* Small adjustments for mobile */
+    @media (max-width: 900px) {
+      .container { padding: 10px; gap:10px; }
+      h1 { font-size: 1.3rem; }
+      .logo { width:72px; height:72px; }
+      .wallet-btn { padding:10px; }
+      .row { padding:8px; }
+      .stat-value { font-size:1rem; }
+    }
+    @media (max-width:520px) {
+      body { padding:8px; }
+      .wallet-btns { flex-direction: column; }
+      .wallet-btn { width:100%; }
+      .stats { grid-template-columns: 1fr; }
+      .logo { width:64px; height:64px; }
+      h1 { font-size:1.1rem; }
+    }
   </style>
 </head>
 <body>
   <div class="container">
-    <h2>Dragon Escrow Vault — Diagnostics (Mainnet)</h2>
+    <h1>🐉 DRAGON ESCROW VAULT</h1>
 
-    <div class="notice">
-      Loader tries local UMD/ESM first, then CDN UMD/ESM, and scans window for known Web3Auth symbols.
-      Web3Auth is configured for "mainnet" here (no testnet). Ensure your Web3Auth client in the dashboard is a mainnet client and the app origin is allowed.
+    <div class="wallet">
+      <div style="display:flex;flex-direction:column;align-items:center;">
+        <div class="logo" aria-hidden="true"></div>
+        <div class="wallet-status">
+          <span class="indicator" id="indicator"></span>
+          <span id="statusText">NOT CONNECTED</span>
+        </div>
+      </div>
+
+      <div class="wallet-btns" style="margin-bottom:10px;">
+        <button id="metamaskBtn" class="wallet-btn">
+          <div style="font-size:1.4rem;">🦊</div>
+          <div>MetaMask</div>
+        </button>
+
+        <button id="web3authBtn" class="wallet-btn">
+          <div style="font-size:1.4rem;">🔐</div>
+          <div>Web3Auth</div>
+        </button>
+      </div>
+
+      <div id="walletInfo" class="wallet-info">
+        <div style="display:flex;justify-content:space-between;margin-bottom:8px">
+          <div class="label">Address</div><div id="userAddr" class="value">-</div>
+        </div>
+        <div style="display:flex;justify-content:space-between;margin-bottom:8px">
+          <div class="label">Network</div><div id="userNet" class="value">-</div>
+        </div>
+        <div style="display:flex;justify-content:space-between">
+          <div class="label">Balance</div><div id="userBal" class="value">-</div>
+        </div>
+        <div id="adminBadge" style="margin-top:10px"></div>
+        <div style="margin-top:10px">
+          <button id="disconnectBtn" class="btn ghost small" style="width:100%;">DISCONNECT</button>
+        </div>
+      </div>
     </div>
 
-    <div class="grid">
-      <button id="testLoad" class="btn">Test SDK Load</button>
-      <button id="tryConnect" class="btn">Attempt Web3Auth Connect</button>
-      <button id="queryRpc" class="btn">Query contract (RPC)</button>
-      <button id="queryMy" class="btn">Query my escrows (wallet)</button>
-      <button id="connectMM" class="btn">Connect MetaMask</button>
-      <button id="downloadUmd" class="btn">Show download commands</button>
-      <button id="listWindowKeys" class="btn">List matching window keys</button>
+    <div class="lcd">
+      <div class="title">LIVE LCD DASHBOARD</div>
+
+      <div class="row"><div class="label">Platform Fee</div><div id="fee" class="value loading">...</div></div>
+      <div class="row"><div class="label">Total Fees</div><div id="total" class="value loading">...</div></div>
+      <div class="row"><div class="label">Fee Collector</div><div id="collector" class="value loading">...</div></div>
+      <div class="row"><div class="label">Status</div><div id="status" class="value loading">...</div></div>
+      <div class="row"><div class="label">Owner</div><div id="owner" class="value loading">...</div></div>
+      <div class="row"><div class="label">Escrows</div><div id="count" class="value loading">...</div></div>
+
+      <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
+        <button id="refreshBtn" class="btn small">🔄 Refresh</button>
+        <div style="flex:1"></div>
+        <div style="color:var(--muted);font-size:0.9rem;align-self:center">Auto-refresh every 15s</div>
+      </div>
     </div>
 
-    <div id="diag"><strong>Diagnostics output:</strong>
-      <div id="diagLog"></div>
+    <div class="stats" aria-hidden="false">
+      <div class="stat"><div class="stat-label">Network</div><div id="networkName" class="stat-value">Monad</div></div>
+      <div class="stat"><div class="stat-label">Chain ID</div><div id="chainId" class="stat-value">143</div></div>
+      <div class="stat"><div class="stat-label">RPC Status</div><div id="rpcStatus" class="stat-value">⏳</div></div>
+      <div class="stat"><div class="stat-label">Block Height</div><div id="block" class="stat-value loading">...</div></div>
+      <div class="stat"><div class="stat-label">Gas Price</div><div id="gasPrice" class="stat-value loading">...</div></div>
+      <div class="stat"><div class="stat-label">Last Update</div><div id="lastUpdate" class="stat-value">Just now</div></div>
     </div>
 
-    <pre id="consoleOut">Console output will appear here...</pre>
+    <div id="msg" style="min-height:28px"></div>
   </div>
 
   <script>
-    /***** CONFIG - MAINNET *****/
+    // keep your JS as before but referencing the new simplified variable names
     const CONFIG = {
-      rpc: "https://rpc.monad.xyz",
       addr: "0x49d88eB97341108d9C6868d65a6512a4af3d183b",
-      chainIdHex: "0x8F",           // Monad mainnet chain id (hex)
+      rpc: "https://rpc.monad.xyz",
+      chainId: "0x8F",
       chainIdDec: 143,
-      web3auth: {
-        clientId: "BNCSx81g7Ukojfyp47J0kQVSUiEuqRe_6iFBMusUyziWdbwdXDceON7f3WlwQ04h7DvvX1jAFhkocwg-PZ_yWqE",
-        web3AuthNetwork: "mainnet" // <-- switched to mainnet (no testnet)
-      },
-      explorerTxUrl: (tx) => `https://monadvision.com/tx/${tx}`
+      web3auth: { clientId: "BNCSx81g7Ukojfyp47J0kQVSUiEuqRe_6iFBMusUyziWdbwdXDceON7f3WlwQ04h7DvvX1jAFhkocwg-PZ_yWqE", network: "mainnet" }
     };
 
-    /***** ABI (corrected) *****/
-    const ABI = [ /* same corrected ABI as before (omitted here for brevity in this snippet) */ 
+    const ABI = /* ABI omitted here for brevity; use same corrected ABI as in your original file */ [
       {"inputs":[],"stateMutability":"nonpayable","type":"constructor"},
       {"inputs":[],"name":"FeePercentTooHigh","type":"error"},
       {"inputs":[],"name":"InvalidAddress","type":"error"},
@@ -113,258 +276,164 @@
       {"stateMutability":"payable","type":"receive"}
     ];
 
-    /***** globals *****/
+    // GLOBALS
     let w3 = new Web3(CONFIG.rpc);
-    let contract = new w3.eth.Contract(ABI, CONFIG.addr);
-    let walletProvider = null;
-    let walletAddress = null;
+    let c = new w3.eth.Contract(ABI, CONFIG.addr);
+    let userAddr = null;
+    let web3auth = null;
 
-    /***** logging helpers *****/
-    const elOut = id => document.getElementById(id);
-    const log = (msg) => {
-      elOut('consoleOut').textContent = (new Date()).toISOString() + ' — ' + msg + '\n\n' + elOut('consoleOut').textContent;
-      console.log(msg);
-    };
-    const diagAppend = (s) => { elOut('diagLog').innerText += s + '\n'; };
-
-    /***** Robust loader helpers (same as before) *****/
-    const UMD_URLS = [
-      '/libs/modal.umd.min.js',
-      'https://cdn.jsdelivr.net/npm/@web3auth/modal@8.0.0/dist/modal.umd.min.js',
-      'https://unpkg.com/@web3auth/modal@8.0.0/dist/modal.umd.min.js'
-    ];
-    const ESM_URLS = [
-      '/libs/modal.esm.min.js',
-      'https://cdn.jsdelivr.net/npm/@web3auth/modal@8.0.0/dist/modal.esm.min.js',
-      'https://unpkg.com/@web3auth/modal@8.0.0/dist/modal.esm.min.js'
-    ];
-
-    async function probeUrl(url, timeout = 6000) {
-      try {
-        const controller = new AbortController();
-        const timer = setTimeout(()=>controller.abort(), timeout);
-        const res = await fetch(url, { method: 'GET', mode: 'cors', signal: controller.signal, cache: 'no-store' });
-        clearTimeout(timer);
-        return { ok: res.ok, status: res.status, url };
-      } catch (e) { return { ok: false, error: e.message || String(e), url }; }
+    // HELPERS
+    function msg(text, type = 'info') {
+      const el = document.getElementById('msg');
+      el.innerHTML = `<div style="padding:8px;border-radius:8px;background:${type==='error'?'#2a0b0b':'#071a10'};color:${type==='error'?'#ffb3b3':'#bfffe0'};font-weight:800">${text}</div>`;
+      if (type !== 'info') setTimeout(()=>el.innerHTML='',4000);
     }
+    function short(a){ return a? `${a.slice(0,6)}...${a.slice(-4)}` : '-'; }
+    function setLoading(id, txt){ const el = document.getElementById(id); if(el){ el.textContent = txt; el.classList.remove('loading'); } }
 
-    function loadScript(url, timeout = 15000) {
-      return new Promise((resolve,reject)=>{
-        const s = document.createElement('script'); s.src = url; s.async = true;
-        let done = false;
-        const timer = setTimeout(()=>{ if(done) return; done = true; s.onerror = s.onload = null; reject(new Error('timeout loading ' + url)); }, timeout);
-        s.onload = () => { if(done) return; done = true; clearTimeout(timer); resolve(url); };
-        s.onerror = (e) => { if(done) return; done = true; clearTimeout(timer); reject(new Error('error loading ' + url + ' — ' + (e && e.message ? e.message : e))); };
-        document.head.appendChild(s);
+    async function callContractJSON(method, params = []) {
+      // simple eth_call wrapper via RPC (read-only)
+      const func = ABI.find(x => x.name === method);
+      if(!func) throw new Error('Method not in ABI: ' + method);
+      const data = w3.eth.abi.encodeFunctionCall(func, params);
+      const res = await fetch(CONFIG.rpc, {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ jsonrpc:'2.0', id:1, method:'eth_call', params:[{ to: CONFIG.addr, data }, 'latest'] })
       });
+      const j = await res.json();
+      return j.result;
     }
 
-    async function tryDynamicEsmImport(url) {
+    // LCD update (simplified & robust)
+    async function updateLCD(){
+      ['fee','total','collector','status','owner','count','block'].forEach(id => setLoading(id, '⏳'));
       try {
-        const mod = await import(/* @vite-ignore */ url);
-        console.log('ESM import succeeded from', url, 'exports:', Object.keys(mod));
-        return mod.Web3Auth || mod.default || mod.Web3auth || null;
-      } catch (e) {
-        console.warn('ESM import failed for', url, e && e.message ? e.message : e);
-        throw e;
+        // block
+        const blk = await w3.eth.getBlockNumber();
+        setLoading('block', blk.toLocaleString());
+        // fee percent
+        const feeBp = await c.methods.feePercent().call().catch(()=>null);
+        setLoading('fee', feeBp !== null ? (Number(feeBp)/100).toFixed(2) + '%' : 'N/A');
+        // total fees
+        const totalFees = await c.methods.totalFeesCollected().call().catch(()=>null);
+        setLoading('total', totalFees ? parseFloat(w3.utils.fromWei(totalFees,'ether')).toFixed(4) + ' MON' : '0 MON');
+        // collector
+        const coll = await c.methods.feeCollector().call().catch(()=>null);
+        setLoading('collector', coll && coll !== '0x0000000000000000000000000000000000000000' ? short(coll) : '-');
+        // paused
+        const paused = await c.methods.paused().call().catch(()=>false);
+        setLoading('status', paused ? '⛔ PAUSED' : '✅ ACTIVE');
+        // owner
+        const owner = await c.methods.owner().call().catch(()=>null);
+        setLoading('owner', owner && owner !== '0x0000000000000000000000000000000000000000' ? short(owner) : '-');
+        // escrow count
+        const count = await c.methods.escrowCount().call().catch(()=>0);
+        setLoading('count', Number(count).toLocaleString());
+        setLoading('lastUpdate', new Date().toLocaleTimeString());
+      } catch (err) {
+        ['fee','total','collector','status','owner','count','block'].forEach(id => setLoading(id, 'N/A'));
+        msg('Failed to refresh LCD: ' + (err.message || err), 'error');
       }
     }
 
-    function detectGlobalCtorFromWindow() {
-      const candidates = [
-        window.Web3Auth,
-        (window.Web3auth && window.Web3auth.Web3Auth),
-        window.Web3auth,
-        window.Web3AuthModal,
-        window.Web3Modal,
-        window.web3auth
-      ];
-      for (const c of candidates) if (c) return c;
-      const name = Object.keys(window).find(k => /web3auth|web3modal|Web3Auth/i.test(k));
-      if (name) return window[name];
-      return null;
+    // WALLET & CONNECT
+    function updateWalletUI(connected, via='') {
+      const ind = document.getElementById('indicator');
+      const st = document.getElementById('statusText');
+      const info = document.getElementById('walletInfo');
+      if(connected){
+        ind.classList.add('on');
+        st.textContent = `CONNECTED ${via ? '· ' + via.toUpperCase() : ''}`;
+        info.classList.add('show');
+      } else {
+        ind.classList.remove('on');
+        st.textContent = 'NOT CONNECTED';
+        info.classList.remove('show');
+      }
     }
 
-    async function ensureWeb3AuthLoadedRobust() {
-      const already = detectGlobalCtorFromWindow();
-      if (already) { log('Web3Auth ctor already on window'); return already; }
-
-      const errors = [];
-      for (const url of UMD_URLS) {
-        diagAppend('Probing UMD ' + url);
-        const r = await probeUrl(url, 6000);
-        diagAppend('probe: ' + JSON.stringify(r));
-        if (!r.ok) { errors.push({ url, reason: r.error || r.status }); continue; }
-        try {
-          log('Loading UMD: ' + url);
-          await loadScript(url, 20000);
-          await new Promise(r => setTimeout(r, 120));
-          const ctor = detectGlobalCtorFromWindow();
-          if (ctor) { log('Found ctor after UMD load: ' + url); return ctor; }
-          errors.push({ url, reason: 'script loaded but global not found' });
-        } catch (e) {
-          errors.push({ url, reason: e.message || String(e) });
-          log('UMD load failed: ' + url + ' — ' + (e.message || e));
-        }
-      }
-
-      for (const url of ESM_URLS) {
-        diagAppend('Probing ESM ' + url);
-        const r = await probeUrl(url, 6000);
-        diagAppend('probe: ' + JSON.stringify(r));
-        if (!r.ok) { errors.push({ url, reason: r.error || r.status }); continue; }
-        try {
-          log('Attempting ESM import: ' + url);
-          const ctor = await tryDynamicEsmImport(url);
-          if (ctor) { log('Found ctor via ESM import: ' + url); return ctor; }
-          errors.push({ url, reason: 'ESM import succeeded but constructor not found in exports' });
-        } catch (e) {
-          errors.push({ url, reason: e.message || String(e) });
-        }
-      }
-
-      const keys = Object.keys(window).filter(k => /web3auth|web3modal|Web3Auth|Web3Modal/i.test(k));
-      console.error('No Web3Auth constructor found. Keys matching web3auth/web3modal:', keys);
-      diagAppend('ERRORS: ' + JSON.stringify(errors, null, 2));
-      diagAppend('Window keys (matching): ' + JSON.stringify(keys));
-      throw new Error('Failed to find Web3Auth constructor. See diag/log for details.');
-    }
-
-    async function connectWeb3AuthRobust() {
+    async function switchToMonad(){
+      if(!window.ethereum) return;
       try {
-        const Ctor = await ensureWeb3AuthLoadedRobust();
-        if (!Ctor) throw new Error('No constructor after loader');
-        log('Using Web3Auth constructor: ' + (Ctor.name || 'anonymous'));
-        const web3auth = new Ctor({
-          clientId: CONFIG.web3auth.clientId,
-          web3AuthNetwork: CONFIG.web3auth.web3AuthNetwork,
-          chainConfig: {
-            chainNamespace: "eip155",
-            chainId: CONFIG.chainIdHex,
-            rpcTarget: CONFIG.rpc,
-            displayName: "Monad Mainnet",
-            blockExplorer: "https://monadvision.com",
-            ticker: "MON",
-            tickerName: "Monad"
-          }
-        });
-        if (typeof web3auth.initModal === 'function') {
-          await web3auth.initModal();
-        }
+        await window.ethereum.request({ method:'wallet_switchEthereumChain', params:[{chainId: CONFIG.chainId}] });
+      } catch (e){
+        if(e.code === 4902){
+          await window.ethereum.request({
+            method:'wallet_addEthereumChain',
+            params:[{ chainId:CONFIG.chainId, chainName:'Monad Mainnet', nativeCurrency:{name:'Monad',symbol:'MON',decimals:18}, rpcUrls:[CONFIG.rpc], blockExplorerUrls:['https://monadvision.com'] }]
+          });
+        } else throw e;
+      }
+    }
+
+    async function connectMetaMask(){
+      try {
+        if(!window.ethereum) { msg('Install MetaMask to connect', 'error'); return; }
+        msg('Connecting MetaMask...', 'info');
+        const accs = await window.ethereum.request({ method:'eth_requestAccounts' });
+        if(!accs || accs.length === 0) throw new Error('No accounts');
+        userAddr = accs[0];
+        await switchToMonad();
+        w3 = new Web3(window.ethereum);
+        c = new w3.eth.Contract(ABI, CONFIG.addr);
+        const bal = await w3.eth.getBalance(userAddr);
+        document.getElementById('userAddr').textContent = short(userAddr);
+        document.getElementById('userBal').textContent = parseFloat(w3.utils.fromWei(bal,'ether')).toFixed(4) + ' MON';
+        document.getElementById('userNet').textContent = 'Monad';
+        // admin badge
+        try { const owner = await c.methods.owner().call(); if(owner.toLowerCase() === userAddr.toLowerCase()) document.getElementById('adminBadge').innerHTML = '<div style="background:var(--accent);color:#00110a;padding:6px;border-radius:8px;font-weight:900;margin-top:8px;text-align:center">ADMIN</div>'; } catch {}
+        updateWalletUI(true,'MetaMask');
+        msg('MetaMask connected', 'success');
+        window.ethereum.on('accountsChanged', a => { if(!a||a.length===0) disconnect(); else location.reload(); });
+      } catch(e){
+        msg('MetaMask error: ' + (e.message||e), 'error');
+      }
+    }
+
+    async function connectWeb3Auth(){
+      try {
+        if(!window.Web3auth){ msg('Web3Auth SDK not loaded', 'error'); return; }
+        msg('Initializing Web3Auth...', 'info');
+        web3auth = new window.Web3auth.Web3Auth({ clientId: CONFIG.web3auth.clientId, web3AuthNetwork: CONFIG.web3auth.network, chainConfig:{ chainNamespace:'eip155', chainId:CONFIG.chainId, rpcTarget:CONFIG.rpc } });
+        await web3auth.initModal();
         const provider = await web3auth.connect();
-        if (!provider) throw new Error('No provider returned by web3auth.connect()');
-        walletProvider = provider;
         w3 = new Web3(provider);
-        contract = new w3.eth.Contract(ABI, CONFIG.addr);
+        c = new w3.eth.Contract(ABI, CONFIG.addr);
         const accs = await w3.eth.getAccounts();
-        walletAddress = accs[0];
-        log('Web3Auth connected wallet: ' + walletAddress);
-        diagAppend('Web3Auth wallet: ' + walletAddress);
-      } catch (e) {
-        log('connectWeb3AuthRobust failed: ' + (e.message || e));
-        diagAppend('connect error: ' + (e.message || e));
-        alert('Web3Auth connect failed — see diagnostics');
-      }
+        userAddr = accs[0];
+        const bal = await w3.eth.getBalance(userAddr);
+        document.getElementById('userAddr').textContent = short(userAddr);
+        document.getElementById('userBal').textContent = parseFloat(w3.utils.fromWei(bal,'ether')).toFixed(4) + ' MON';
+        document.getElementById('userNet').textContent = 'Monad';
+        try { const owner = await c.methods.owner().call(); if(owner.toLowerCase() === userAddr.toLowerCase()) document.getElementById('adminBadge').innerHTML = '<div style="background:var(--accent);color:#00110a;padding:6px;border-radius:8px;font-weight:900;margin-top:8px;text-align:center">ADMIN</div>'; } catch {}
+        updateWalletUI(true,'Web3Auth');
+        msg('Web3Auth connected', 'success');
+      } catch(e){ msg('Web3Auth error: ' + (e.message||e), 'error'); }
     }
 
-    async function queryContractViaRPC() {
-      log('Querying contract via RPC: ' + CONFIG.addr);
-      try {
-        const [feeBp, totalFeesWei, collector, paused, owner, escrowCount, blockNumber, gasPrice] = await Promise.all([
-          contract.methods.feePercent().call(),
-          contract.methods.totalFeesCollected().call(),
-          contract.methods.feeCollector().call(),
-          contract.methods.paused().call(),
-          contract.methods.owner().call(),
-          contract.methods.escrowCount().call(),
-          w3.eth.getBlockNumber(),
-          w3.eth.getGasPrice()
-        ]);
-        const out = {
-          feePercentBp: feeBp,
-          feePercentPct: (Number(feeBp)/100).toFixed(2) + '%',
-          totalFeesMON: Number(w3.utils.fromWei(totalFeesWei.toString(),'ether')).toString(),
-          collector,
-          paused,
-          owner,
-          escrowCount,
-          blockNumber,
-          gasPrice
-        };
-        log('Contract snapshot: ' + JSON.stringify(out, null, 2));
-        diagAppend('Contract snapshot: ' + JSON.stringify(out, null, 2));
-      } catch (e) {
-        log('RPC query failed: ' + (e.message||e));
-        diagAppend('RPC error: ' + (e.message||e));
-      }
+    function disconnect(){
+      if(web3auth && web3auth.logout) web3auth.logout().catch(()=>{});
+      userAddr = null;
+      updateWalletUI(false);
+      document.getElementById('userAddr').textContent = '-';
+      document.getElementById('userBal').textContent = '-';
+      document.getElementById('userNet').textContent = '-';
+      document.getElementById('adminBadge').innerHTML = '';
+      msg('Disconnected', 'info');
     }
 
-    async function connectMetaMask() {
-      if (!window.ethereum) { alert('MetaMask not installed'); return; }
-      try {
-        const acc = await window.ethereum.request({ method: 'eth_requestAccounts' });
-        walletAddress = acc[0];
-        walletProvider = window.ethereum;
-        w3 = new Web3(walletProvider);
-        contract = new w3.eth.Contract(ABI, CONFIG.addr);
-        log('MetaMask connected: ' + walletAddress);
-        diagAppend('Wallet: ' + walletAddress);
-      } catch (e) {
-        log('MetaMask connect failed: ' + (e.message||e));
-        diagAppend('MM error: ' + (e.message||e));
-      }
-    }
+    // Bindings
+    document.getElementById('metamaskBtn').onclick = connectMetaMask;
+    document.getElementById('web3authBtn').onclick = connectWeb3Auth;
+    document.getElementById('disconnectBtn').onclick = disconnect;
+    document.getElementById('refreshBtn').onclick = updateLCD;
 
-    async function queryMyEscrows() {
-      if (!walletAddress) { alert('Connect MetaMask or Web3Auth first'); return; }
-      try {
-        log('Fetching user escrows for ' + walletAddress);
-        const ids = await contract.methods.getUserEscrows(walletAddress).call();
-        log('Escrow IDs: ' + JSON.stringify(ids));
-        if (!ids || ids.length === 0) { diagAppend('No escrows'); return; }
-        for (const id of ids) {
-          const e = await contract.methods.getEscrow(id).call();
-          diagAppend(`ID ${id} buyer:${e.buyer} seller:${e.seller} amt:${w3.utils.fromWei(e.amount,'ether')} state:${e.state}`);
-        }
-      } catch (e) {
-        log('Failed loading user escrows: ' + (e.message||e));
-        diagAppend('User escrows error: ' + (e.message||e));
-      }
-    }
-
-    /***** bindings *****/
-    document.getElementById('testLoad').onclick = async () => {
-      elOut('consoleOut').textContent = '';
-      elOut('diagLog').textContent = '';
-      try {
-        await ensureWeb3AuthLoadedRobust();
-        alert('SDK loaded (or constructor found) — check console for details.');
-      } catch (e) {
-        alert('SDK load failed — see diagnostics.');
-      }
-    };
-    document.getElementById('tryConnect').onclick = connectWeb3AuthRobust;
-    document.getElementById('queryRpc').onclick = queryContractViaRPC;
-    document.getElementById('connectMM').onclick = connectMetaMask;
-    document.getElementById('queryMy').onclick = queryMyEscrows;
-    document.getElementById('downloadUmd').onclick = () => {
-      alert(
-`Download commands (run on your server/dev machine):
-mkdir -p frontend/libs
-curl -L -o frontend/libs/modal.umd.min.js https://cdn.jsdelivr.net/npm/@web3auth/modal@8.0.0/dist/modal.umd.min.js
-curl -L -o frontend/libs/modal.esm.min.js https://cdn.jsdelivr.net/npm/@web3auth/modal@8.0.0/dist/modal.esm.min.js`
-      );
-      console.log('curl commands printed to alert');
-    };
-    document.getElementById('listWindowKeys').onclick = () => {
-      const keys = Object.keys(window).filter(k => /web3auth|web3modal|Web3Auth|Web3Modal/i.test(k));
-      alert('Matching window keys: ' + JSON.stringify(keys));
-      console.log('Matching window keys:', keys);
-    };
-
-    // initial RPC snapshot
-    queryContractViaRPC().catch(()=>{});
+    // Init
+    window.addEventListener('DOMContentLoaded', () => {
+      updateWalletUI(false);
+      updateLCD();
+      setInterval(updateLCD, 15000);
+    });
   </script>
 </body>
 </html>
