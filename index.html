@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Dragon Escrow Vault — Web3Auth + Contract Diagnostics</title>
+  <title>Dragon Escrow Vault — Web3Auth + Contract Diagnostics (Robust)</title>
   <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/web3/1.10.0/web3.min.js"></script>
   <style>
@@ -19,19 +19,22 @@
 </head>
 <body>
   <div class="container">
-    <h2>Dragon Escrow Vault — Diagnostics</h2>
+    <h2>Dragon Escrow Vault — Diagnostics (Robust loader)</h2>
 
     <div class="notice">
-      This page tests Web3Auth SDK loading and queries the escrow contract via RPC. Use the buttons below.
+      This page tries UMD (local-first), then ESM dynamic-import fallbacks, and scans window for any Web3Auth export name.
+      If CDNs are blocked or the package exposes a different symbol, this loader will attempt to find it.
+      Recommended: download assets locally to <code>/libs/</code> if you can't rely on CDNs.
     </div>
 
     <div class="grid">
-      <button id="testLoad" class="btn">Test Web3Auth SDK Load</button>
+      <button id="testLoad" class="btn">Test SDK Load</button>
       <button id="tryConnect" class="btn">Attempt Web3Auth Connect</button>
       <button id="queryRpc" class="btn">Query contract (RPC)</button>
       <button id="queryMy" class="btn">Query my escrows (wallet)</button>
       <button id="connectMM" class="btn">Connect MetaMask</button>
-      <button id="downloadUmd" class="btn">Show UMD download cmd</button>
+      <button id="downloadUmd" class="btn">Show download commands</button>
+      <button id="listWindowKeys" class="btn">List matching window keys</button>
     </div>
 
     <div id="diag"><strong>Diagnostics output:</strong>
@@ -56,7 +59,7 @@
     };
 
     /***** ABI (corrected) *****/
-    const ABI = [ /* paste the ABI JSON you provided earlier */ 
+    const ABI = [
       {"inputs":[],"stateMutability":"nonpayable","type":"constructor"},
       {"inputs":[],"name":"FeePercentTooHigh","type":"error"},
       {"inputs":[],"name":"InvalidAddress","type":"error"},
@@ -114,7 +117,7 @@
     /***** globals *****/
     let w3 = new Web3(CONFIG.rpc);
     let contract = new w3.eth.Contract(ABI, CONFIG.addr);
-    let walletProvider = null;   // provider object when wallet connected
+    let walletProvider = null;
     let walletAddress = null;
 
     /***** logging helpers *****/
@@ -125,12 +128,18 @@
     };
     const diagAppend = (s) => { elOut('diagLog').innerText += s + '\n'; };
 
-    /***** Web3Auth SDK loader (same local-first list) *****/
-    const WEB3AUTH_UMD_URLS = [
+    /***** Robust loader helpers *****/
+    const UMD_URLS = [
       '/libs/modal.umd.min.js',
       'https://cdn.jsdelivr.net/npm/@web3auth/modal@8.0.0/dist/modal.umd.min.js',
       'https://unpkg.com/@web3auth/modal@8.0.0/dist/modal.umd.min.js'
     ];
+    const ESM_URLS = [
+      '/libs/modal.esm.min.js',
+      'https://cdn.jsdelivr.net/npm/@web3auth/modal@8.0.0/dist/modal.esm.min.js',
+      'https://unpkg.com/@web3auth/modal@8.0.0/dist/modal.esm.min.js'
+    ];
+
     async function probeUrl(url, timeout = 6000) {
       try {
         const controller = new AbortController();
@@ -140,6 +149,7 @@
         return { ok: res.ok, status: res.status, url };
       } catch (e) { return { ok: false, error: e.message || String(e), url }; }
     }
+
     function loadScript(url, timeout = 15000) {
       return new Promise((resolve,reject)=>{
         const s = document.createElement('script'); s.src = url; s.async = true;
@@ -150,30 +160,116 @@
         document.head.appendChild(s);
       });
     }
-    async function ensureWeb3AuthLoaded() {
-      if (window.Web3Auth || window.Web3auth) { log('Web3Auth global already present'); return; }
-      let errors = [];
-      for (const url of WEB3AUTH_UMD_URLS) {
-        diagAppend('Probing ' + url);
-        const r = await probeUrl(url, 6000);
-        diagAppend('probe: ' + JSON.stringify(r));
-        if (!r.ok) { errors.push({url, reason: r.error || r.status}); continue; }
-        try {
-          log('loading script ' + url);
-          await loadScript(url, 20000);
-          await new Promise(r => setTimeout(r, 120));
-          if (window.Web3Auth || window.Web3auth) { log('Loaded SDK from ' + url); return; }
-          errors.push({url, reason: 'script loaded but global not found'});
-        } catch (e) {
-          errors.push({url, reason: e.message || String(e)});
-          log('failed to load ' + url + ' — ' + (e.message || e));
-        }
+
+    async function tryDynamicEsmImport(url) {
+      try {
+        // dynamic import; crossorigin module must be served with proper MIME/CORS
+        const mod = await import(/* @vite-ignore */ url);
+        console.log('ESM import succeeded from', url, 'exports:', Object.keys(mod));
+        return mod.Web3Auth || mod.default || mod.Web3auth || null;
+      } catch (e) {
+        console.warn('ESM import failed for', url, e && e.message ? e.message : e);
+        throw e;
       }
-      diagAppend('ERRORS: ' + JSON.stringify(errors, null, 2));
-      throw new Error('Failed to load Web3Auth from any URL. See diag output.');
     }
 
-    /***** Contract queries *****/
+    function detectGlobalCtorFromWindow() {
+      const candidates = [
+        window.Web3Auth,
+        (window.Web3auth && window.Web3auth.Web3Auth),
+        window.Web3auth,
+        window.Web3AuthModal,
+        window.Web3Modal,
+        window.web3auth
+      ];
+      for (const c of candidates) if (c) return c;
+      const name = Object.keys(window).find(k => /web3auth|web3modal|Web3Auth/i.test(k));
+      if (name) return window[name];
+      return null;
+    }
+
+    async function ensureWeb3AuthLoadedRobust() {
+      // If already present
+      const already = detectGlobalCtorFromWindow();
+      if (already) { log('Web3Auth ctor already on window'); return already; }
+
+      const errors = [];
+      // Try UMD scripts (local-first)
+      for (const url of UMD_URLS) {
+        diagAppend('Probing UMD ' + url);
+        const r = await probeUrl(url, 6000);
+        diagAppend('probe: ' + JSON.stringify(r));
+        if (!r.ok) { errors.push({ url, reason: r.error || r.status }); continue; }
+        try {
+          log('Loading UMD: ' + url);
+          await loadScript(url, 20000);
+          await new Promise(r => setTimeout(r, 120));
+          const ctor = detectGlobalCtorFromWindow();
+          if (ctor) { log('Found ctor after UMD load: ' + url); return ctor; }
+          errors.push({ url, reason: 'script loaded but global not found' });
+        } catch (e) {
+          errors.push({ url, reason: e.message || String(e) });
+          log('UMD load failed: ' + url + ' — ' + (e.message || e));
+        }
+      }
+
+      // Try ESM dynamic imports (local-first)
+      for (const url of ESM_URLS) {
+        diagAppend('Probing ESM ' + url);
+        const r = await probeUrl(url, 6000);
+        diagAppend('probe: ' + JSON.stringify(r));
+        if (!r.ok) { errors.push({ url, reason: r.error || r.status }); continue; }
+        try {
+          log('Attempting ESM import: ' + url);
+          const ctor = await tryDynamicEsmImport(url);
+          if (ctor) { log('Found ctor via ESM import: ' + url); return ctor; }
+          errors.push({ url, reason: 'ESM import succeeded but constructor not found in exports' });
+        } catch (e) {
+          errors.push({ url, reason: e.message || String(e) });
+        }
+      }
+
+      const keys = Object.keys(window).filter(k => /web3auth|web3modal|Web3Auth|Web3Modal/i.test(k));
+      console.error('No Web3Auth constructor found. Keys matching web3auth/web3modal:', keys);
+      diagAppend('ERRORS: ' + JSON.stringify(errors, null, 2));
+      diagAppend('Window keys (matching): ' + JSON.stringify(keys));
+      throw new Error('Failed to find Web3Auth constructor. See diag/log for details.');
+    }
+
+    async function connectWeb3AuthRobust() {
+      try {
+        const Ctor = await ensureWeb3AuthLoadedRobust();
+        if (!Ctor) throw new Error('No constructor after loader');
+        log('Using Web3Auth constructor: ' + (Ctor.name || 'anonymous'));
+        const web3auth = new Ctor({
+          clientId: CONFIG.web3auth.clientId,
+          web3AuthNetwork: CONFIG.web3auth.web3AuthNetwork,
+          chainConfig: {
+            chainNamespace: "eip155",
+            chainId: CONFIG.chainIdHex,
+            rpcTarget: CONFIG.rpc
+          }
+        });
+        if (typeof web3auth.initModal === 'function') {
+          await web3auth.initModal();
+        }
+        const provider = await web3auth.connect();
+        if (!provider) throw new Error('No provider returned by web3auth.connect()');
+        walletProvider = provider;
+        w3 = new Web3(provider);
+        contract = new w3.eth.Contract(ABI, CONFIG.addr);
+        const accs = await w3.eth.getAccounts();
+        walletAddress = accs[0];
+        log('Web3Auth connected wallet: ' + walletAddress);
+        diagAppend('Web3Auth wallet: ' + walletAddress);
+      } catch (e) {
+        log('connectWeb3AuthRobust failed: ' + (e.message || e));
+        diagAppend('connect error: ' + (e.message || e));
+        alert('Web3Auth connect failed — see diagnostics');
+      }
+    }
+
+    /***** Contract queries and wallet helpers *****/
     async function queryContractViaRPC() {
       log('Querying contract via RPC: ' + CONFIG.addr);
       try {
@@ -211,9 +307,7 @@
       try {
         const acc = await window.ethereum.request({ method: 'eth_requestAccounts' });
         walletAddress = acc[0];
-        // use injected provider for contract that uses a provider with signer for txs
         walletProvider = window.ethereum;
-        // set w3 to provider temporarily for wallet reads
         w3 = new Web3(walletProvider);
         contract = new w3.eth.Contract(ABI, CONFIG.addr);
         log('MetaMask connected: ' + walletAddress);
@@ -224,12 +318,8 @@
       }
     }
 
-    // Query user escrows (requires wallet connected)
     async function queryMyEscrows() {
-      if (!walletAddress) {
-        alert('Connect MetaMask or Web3Auth first');
-        return;
-      }
+      if (!walletAddress) { alert('Connect MetaMask or Web3Auth first'); return; }
       try {
         log('Fetching user escrows for ' + walletAddress);
         const ids = await contract.methods.getUserEscrows(walletAddress).call();
@@ -245,58 +335,37 @@
       }
     }
 
-    /***** Web3Auth connect helper (keeps instance for wallet use) *****/
-    async function connectWeb3AuthWithDiagnostics() {
-      try {
-        await ensureWeb3AuthLoaded();
-      } catch (e) {
-        log('ensureWeb3AuthLoaded failed: ' + e.message);
-        alert('SDK load failed. See diag.');
-        return;
-      }
-      const ctor = window.Web3Auth || (window.Web3auth && window.Web3auth.Web3Auth) || window.Web3auth;
-      if (!ctor) { log('No Web3Auth constructor exposed'); alert('No ctor'); return; }
-      try {
-        const instance = new ctor({
-          clientId: CONFIG.web3auth.clientId,
-          web3AuthNetwork: CONFIG.web3auth.web3AuthNetwork,
-          chainConfig: { chainNamespace: 'eip155', chainId: CONFIG.chainIdHex, rpcTarget: CONFIG.rpc }
-        });
-        if (typeof instance.initModal === 'function') {
-          await instance.initModal();
-        }
-        // connect() will open modal, returns provider
-        const provider = await instance.connect();
-        if (!provider) { log('Web3Auth.connect returned no provider'); alert('No provider'); return; }
-        walletProvider = provider;
-        w3 = new Web3(provider);
-        contract = new w3.eth.Contract(ABI, CONFIG.addr);
-        const accs = await w3.eth.getAccounts();
-        walletAddress = accs[0];
-        log('Web3Auth connected wallet: ' + walletAddress);
-        diagAppend('Web3Auth wallet: ' + walletAddress);
-      } catch (err) {
-        log('Web3Auth connect/init error: ' + (err && err.message ? err.message : err));
-        diagAppend('Web3Auth error: ' + (err && err.message ? err.message : err));
-      }
-    }
-
     /***** bindings *****/
     document.getElementById('testLoad').onclick = async () => {
       elOut('consoleOut').textContent = '';
       elOut('diagLog').textContent = '';
-      try { await ensureWeb3AuthLoaded(); alert('SDK loaded (or already present)'); } catch (e) { alert('SDK load failed — see diag'); }
+      try {
+        await ensureWeb3AuthLoadedRobust();
+        alert('SDK loaded (or constructor found) — check console for details.');
+      } catch (e) {
+        alert('SDK load failed — see diagnostics.');
+      }
     };
-    document.getElementById('tryConnect').onclick = connectWeb3AuthWithDiagnostics;
+    document.getElementById('tryConnect').onclick = connectWeb3AuthRobust;
     document.getElementById('queryRpc').onclick = queryContractViaRPC;
     document.getElementById('connectMM').onclick = connectMetaMask;
     document.getElementById('queryMy').onclick = queryMyEscrows;
     document.getElementById('downloadUmd').onclick = () => {
-      alert('Download command (run on your server/dev machine):\nmkdir -p frontend/libs && curl -L -o frontend/libs/modal.umd.min.js https://cdn.jsdelivr.net/npm/@web3auth/modal@8.0.0/dist/modal.umd.min.js');
-      console.log('curl command: mkdir -p frontend/libs && curl -L -o frontend/libs/modal.umd.min.js https://cdn.jsdelivr.net/npm/@web3auth/modal@8.0.0/dist/modal.umd.min.js');
+      alert(
+`Download commands (run on your server/dev machine):
+mkdir -p frontend/libs
+curl -L -o frontend/libs/modal.umd.min.js https://cdn.jsdelivr.net/npm/@web3auth/modal@8.0.0/dist/modal.umd.min.js
+curl -L -o frontend/libs/modal.esm.min.js https://cdn.jsdelivr.net/npm/@web3auth/modal@8.0.0/dist/modal.esm.min.js`
+      );
+      console.log('curl commands printed to alert');
+    };
+    document.getElementById('listWindowKeys').onclick = () => {
+      const keys = Object.keys(window).filter(k => /web3auth|web3modal|Web3Auth|Web3Modal/i.test(k));
+      alert('Matching window keys: ' + JSON.stringify(keys));
+      console.log('Matching window keys:', keys);
     };
 
-    // initial RPC snapshot automatically
+    // initial RPC snapshot
     queryContractViaRPC().catch(()=>{});
   </script>
 </body>
