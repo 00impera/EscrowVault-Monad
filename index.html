@@ -1,123 +1,23 @@
+
 <!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Dragon Escrow Vault — Compact Responsive Dashboard</title>
-
-  <!-- Font + web3 -->
+  <title>Dragon Escrow Vault — Dashboard</title>
   <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/web3/1.10.0/web3.min.js"></script>
-  <!-- Web3Auth will be loaded dynamically by the page -->
   <style>
-    /* Visual system updated: deeper space-blue, gradients, new accents, shadows, responsive */
-    :root{
-      --bg-primary: #0a0e27;
-      --bg:#0a0e27;
-      --text:#e6eef6;
-      --muted:#9aa4a6;
-      --panel-border: rgba(170,150,255,0.06);
-      --glass:10px;
-      --max-w:1400px;
-      --sidebar-w:420px;
-      --accent-cyan: #00d4ff;
-      --accent-purple: #a855f7;
-      --accent-green: #00ff99;
-      --gradient-primary: linear-gradient(135deg, rgba(10,13,39,0.6), rgba(11,14,39,0.4));
-      --gradient-success: linear-gradient(90deg, rgba(0,255,153,0.12), rgba(0,214,255,0.06));
-      --gradient-danger: linear-gradient(90deg, rgba(255,107,107,0.12), rgba(255,68,68,0.06));
-      --btn-bg: linear-gradient(90deg, var(--accent-green), var(--accent-cyan));
-      --card-bg: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.06));
-      --shadow: 0 12px 30px rgba(19,12,46,0.6);
-      --scrollbar-thumb: rgba(168,119,255,0.22);
-      font-synthesis: none;
-    }
-    .theme-blue { --btn-bg:linear-gradient(90deg,var(--accent-cyan),var(--accent-purple)); }
-    .theme-green { --btn-bg:linear-gradient(90deg,var(--accent-green),var(--accent-cyan)); }
-
-    * { box-sizing: border-box; }
-    html,body { height:100%; margin:0; background: radial-gradient(1200px 600px at 10% 10%, rgba(168,119,255,0.04), transparent),
-                                         radial-gradient(800px 400px at 90% 80%, rgba(0,212,255,0.03), transparent),
-                                         var(--bg); color:var(--text); font-family:'Share Tech Mono', monospace; -webkit-font-smoothing:antialiased; }
-    .container { max-width:var(--max-w); margin:18px auto; padding:14px; display:flex; flex-direction:column; gap:12px; }
-
-    header { display:flex; align-items:center; justify-content:space-between; gap:12px; }
-    .brand { display:flex; align-items:center; gap:12px; }
-    .logo { width:56px; height:56px; border-radius:14px; object-fit:cover; border:1px solid rgba(255,255,255,0.04); box-shadow: 0 6px 24px rgba(168,119,255,0.06); }
-    h1 { font-size:1.1rem; margin:0; letter-spacing:.06em; color:var(--text); }
-    .subtitle { font-size:.82rem; color:var(--muted); }
-
-    .top-controls { display:flex; gap:8px; align-items:center; }
-
-    .btn { background:var(--btn-bg); border:1px solid var(--panel-border); padding:8px 12px; border-radius:12px; color:#041017; font-weight:800; cursor:pointer; transition: transform .14s ease, box-shadow .14s ease; box-shadow: 0 8px 26px rgba(10,12,40,0.35); }
-    .btn:hover { transform: translateY(-3px); }
-    .btn.ghost { background: transparent; color:var(--text); border:1px solid var(--panel-border); box-shadow:none; }
-    .btn.small { padding:6px 8px; font-size:.86rem; border-radius:10px; }
-
-    .grid { display:grid; grid-template-columns: 1fr var(--sidebar-w); gap:16px; align-items:start; }
-    @media (max-width:1100px) { .grid { grid-template-columns: 1fr 360px; } }
-    @media (max-width:860px) { .grid { grid-template-columns: 1fr; } }
-
-    .panel { background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(5,7,20,0.06)); border:1px solid var(--panel-border); border-radius:16px; padding:18px; box-shadow: var(--shadow); backdrop-filter: blur(var(--glass)); }
-    .panel-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
-    .compact { padding:12px; border-radius:14px; }
-
-    .wallet-row { display:flex; align-items:center; justify-content:space-between; gap:12px; }
-    .wallet-left { display:flex; align-items:center; gap:10px; }
-    .indicator { width:14px; height:14px; border-radius:50%; background:rgba(255,68,68,0.6); box-shadow:0 0 10px rgba(255,68,68,0.12); animation: pulse 2.2s infinite; }
-    @keyframes pulse { 0% { transform: scale(1); opacity:1 } 50% { transform: scale(1.08); opacity:0.85 } 100% { transform: scale(1); opacity:1 } }
-
-    input, textarea { width:100%; padding:10px; border-radius:12px; border:1px solid rgba(255,255,255,0.03); background: rgba(0,0,0,0.45); color:var(--text); font-family:inherit; }
-    textarea { min-height:56px; max-height:160px; resize:vertical; }
-
-    .lcd-grid { display:grid; grid-template-columns: repeat(2, 1fr); gap:10px; margin-top:10px; }
-    .lcd-stat { background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(0,0,0,0.03)); border:1px solid rgba(255,255,255,0.02); border-radius:12px; padding:10px; display:flex; justify-content:space-between; align-items:center; }
-    .lcd-label { color:var(--muted); font-size:.86rem }
-    .lcd-value { font-weight:900; color:var(--text); font-size:.96rem }
-
-    .escrow-list { max-height:420px; overflow:auto; display:flex; flex-direction:column; gap:10px; padding-right:6px; margin-top:8px; }
-    .escrow-card { display:flex; justify-content:space-between; gap:12px; padding:12px; border-radius:12px; background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(0,0,0,0.03)); border:1px solid rgba(255,255,255,0.02); transition: transform .18s ease, box-shadow .18s ease; }
-    .escrow-card:hover { transform: translateY(-6px); box-shadow: 0 14px 36px rgba(168,119,255,0.06); }
-    .escrow-meta { font-size:.88rem; color:var(--muted) }
-
-    /* custom scrollbar (purple themed) */
-    .escrow-list::-webkit-scrollbar { width:10px; height:10px; }
-    .escrow-list::-webkit-scrollbar-track { background: transparent; }
-    .escrow-list::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb, rgba(168,119,255,0.22)); border-radius:10px; border: 2px solid transparent; background-clip: padding-box; }
-
-    /* notifications / slideIn */
-    .notification { position: fixed; right: 18px; bottom: 18px; z-index:1200; min-width:220px; max-width:360px; border-radius:12px; padding:12px 14px; color:#041017; font-weight:800; background:linear-gradient(90deg,var(--accent-cyan),var(--accent-purple)); box-shadow: 0 14px 42px rgba(10,12,40,0.55); transform: translateY(18px) scale(.98); opacity:0; animation: slideIn .34s forwards; }
-    .notification.info { background:linear-gradient(90deg, #8fbfff, #bda0ff); color:#041018; }
-    .notification.success { background:linear-gradient(90deg,#b7ffcf,#00ffd7); color:#031018; }
-    .notification.error { background:linear-gradient(90deg,#ff9b9b,#ff6b6b); color:#130909; }
-    @keyframes slideIn { to { transform: translateY(0) scale(1); opacity:1; } }
-
-    /* pending tx bar */
-    .pending-bar { position: fixed; left: 50%; transform: translateX(-50%); bottom: 18px; z-index:1201; background:rgba(5,5,10,0.9); padding:10px 14px; border-radius:12px; color:var(--text); border:1px solid rgba(255,255,255,0.04); display:flex; gap:10px; align-items:center; box-shadow: 0 12px 30px rgba(0,0,0,0.6); }
-    .spinner { width:14px; height:14px; border-radius:50%; border:2px solid rgba(255,255,255,0.12); border-top-color:var(--accent-cyan); animation: spin 1s linear infinite; }
-    @keyframes spin { to { transform: rotate(360deg); } }
-
-    .copy-btn { background: transparent; border: none; color: var(--muted); cursor: pointer; font-weight:700; padding:6px; border-radius:8px; }
-    .small-muted { font-size:.85rem; color:var(--muted); }
-
-    footer { text-align:center; color:var(--muted); margin-top:10px; font-size:.82rem; }
-
-    /* accessibility */
-    button:focus, input:focus, textarea:focus { outline: 2px solid rgba(168,119,255,0.12); outline-offset:4px; }
-    @media (max-width:520px) { .logo{width:44px;height:44px} h1{font-size:1rem} .panel{padding:12px} .escrow-list{max-height:260px} }
+    :root{--bg-primary:#0a0e27;--bg:#0a0e27;--text:#e6eef6;--muted:#9aa4a6;--panel-border:rgba(170,150,255,0.06);--glass:10px;--max-w:1400px;--sidebar-w:420px;--accent-cyan:#00d4ff;--accent-purple:#a855f7;--accent-green:#00ff99;--btn-bg:linear-gradient(90deg,var(--accent-green),var(--accent-cyan));--shadow:0 12px 30px rgba(19,12,46,0.6);--scrollbar-thumb:rgba(168,119,255,0.22);font-synthesis:none}.theme-blue{--btn-bg:linear-gradient(90deg,var(--accent-cyan),var(--accent-purple))}.theme-green{--btn-bg:linear-gradient(90deg,var(--accent-green),var(--accent-cyan))}*{box-sizing:border-box}html,body{height:100%;margin:0;background:radial-gradient(1200px 600px at 10% 10%,rgba(168,119,255,0.04),transparent),radial-gradient(800px 400px at 90% 80%,rgba(0,212,255,0.03),transparent),var(--bg);color:var(--text);font-family:'Share Tech Mono',monospace;-webkit-font-smoothing:antialiased}.container{max-width:var(--max-w);margin:18px auto;padding:14px;display:flex;flex-direction:column;gap:12px}header{display:flex;align-items:center;justify-content:space-between;gap:12px}.brand{display:flex;align-items:center;gap:12px}.logo{width:56px;height:56px;border-radius:14px;object-fit:cover;border:1px solid rgba(255,255,255,0.04);box-shadow:0 6px 24px rgba(168,119,255,0.06)}h1{font-size:1.1rem;margin:0;letter-spacing:.06em;color:var(--text)}.subtitle{font-size:.82rem;color:var(--muted)}.top-controls{display:flex;gap:8px;align-items:center}.btn{background:var(--btn-bg);border:1px solid var(--panel-border);padding:8px 12px;border-radius:12px;color:#041017;font-weight:800;cursor:pointer;transition:transform .14s ease,box-shadow .14s ease;box-shadow:0 8px 26px rgba(10,12,40,0.35);font-family:inherit;font-size:0.9rem}.btn:hover{transform:translateY(-3px)}.btn.ghost{background:transparent;color:var(--text);border:1px solid var(--panel-border);box-shadow:none}.btn.small{padding:6px 8px;font-size:.86rem;border-radius:10px}.grid{display:grid;grid-template-columns:1fr var(--sidebar-w);gap:16px;align-items:start}@media (max-width:1100px){.grid{grid-template-columns:1fr 360px}}@media (max-width:860px){.grid{grid-template-columns:1fr}}.panel{background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(5,7,20,0.06));border:1px solid var(--panel-border);border-radius:16px;padding:18px;box-shadow:var(--shadow);backdrop-filter:blur(var(--glass))}.panel-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}.compact{padding:12px;border-radius:14px}.wallet-row{display:flex;align-items:center;justify-content:space-between;gap:12px}.wallet-left{display:flex;align-items:center;gap:10px}.indicator{width:14px;height:14px;border-radius:50%;background:rgba(255,68,68,0.6);box-shadow:0 0 10px rgba(255,68,68,0.12);animation:pulse 2.2s infinite}@keyframes pulse{0%{transform:scale(1);opacity:1}50%{transform:scale(1.08);opacity:0.85}100%{transform:scale(1);opacity:1}}input,textarea{width:100%;padding:10px;border-radius:12px;border:1px solid rgba(255,255,255,0.03);background:rgba(0,0,0,0.45);color:var(--text);font-family:inherit}textarea{min-height:56px;max-height:160px;resize:vertical}.lcd-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:10px}.lcd-stat{background:linear-gradient(180deg,rgba(255,255,255,0.01),rgba(0,0,0,0.03));border:1px solid rgba(255,255,255,0.02);border-radius:12px;padding:10px;display:flex;justify-content:space-between;align-items:center}.lcd-label{color:var(--muted);font-size:.86rem}.lcd-value{font-weight:900;color:var(--text);font-size:.96rem}.escrow-list{max-height:420px;overflow:auto;display:flex;flex-direction:column;gap:10px;padding-right:6px;margin-top:8px}.escrow-card{display:flex;justify-content:space-between;gap:12px;padding:12px;border-radius:12px;background:linear-gradient(180deg,rgba(255,255,255,0.01),rgba(0,0,0,0.03));border:1px solid rgba(255,255,255,0.02);transition:transform .18s ease,box-shadow .18s ease}.escrow-card:hover{transform:translateY(-6px);box-shadow:0 14px 36px rgba(168,119,255,0.06)}.escrow-meta{font-size:.88rem;color:var(--muted)}.escrow-actions{display:flex;gap:6px;flex-wrap:wrap}.escrow-list::-webkit-scrollbar{width:10px;height:10px}.escrow-list::-webkit-scrollbar-track{background:transparent}.escrow-list::-webkit-scrollbar-thumb{background:var(--scrollbar-thumb,rgba(168,119,255,0.22));border-radius:10px;border:2px solid transparent;background-clip:padding-box}.notification{position:fixed;right:18px;bottom:18px;z-index:1200;min-width:220px;max-width:360px;border-radius:12px;padding:12px 14px;color:#041017;font-weight:800;background:linear-gradient(90deg,var(--accent-cyan),var(--accent-purple));box-shadow:0 14px 42px rgba(10,12,40,0.55);transform:translateY(18px) scale(.98);opacity:0;animation:slideIn .34s forwards}.notification.info{background:linear-gradient(90deg,#8fbfff,#bda0ff);color:#041018}.notification.success{background:linear-gradient(90deg,#b7ffcf,#00ffd7);color:#031018}.notification.error{background:linear-gradient(90deg,#ff9b9b,#ff6b6b);color:#130909}@keyframes slideIn{to{transform:translateY(0) scale(1);opacity:1}}.pending-bar{position:fixed;left:50%;transform:translateX(-50%);bottom:18px;z-index:1201;background:rgba(5,5,10,0.9);padding:10px 14px;border-radius:12px;color:var(--text);border:1px solid rgba(255,255,255,0.04);display:flex;gap:10px;align-items:center;box-shadow:0 12px 30px rgba(0,0,0,0.6)}.spinner{width:14px;height:14px;border-radius:50%;border:2px solid rgba(255,255,255,0.12);border-top-color:var(--accent-cyan);animation:spin 1s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}.copy-btn{background:transparent;border:none;color:var(--muted);cursor:pointer;font-weight:700;padding:6px;border-radius:8px}.copy-btn:hover{color:var(--accent-cyan)}.small-muted{font-size:.85rem;color:var(--muted)}footer{text-align:center;color:var(--muted);margin-top:10px;font-size:.82rem}button:focus,input:focus,textarea:focus{outline:2px solid rgba(168,119,255,0.12);outline-offset:4px}@media (max-width:520px){.logo{width:44px;height:44px}h1{font-size:1rem}.panel{padding:12px}.escrow-list{max-height:260px}}
   </style>
 </head>
 <body>
-  <div class="container" id="appRoot">
+  <div class="container">
     <header>
       <div class="brand">
-        <img class="logo" src="https://brown-left-viper-691.mypinata.cloud/ipfs/bafybeiarjogrmlafa7t4tzyukv633iy4lf7nxtyqm6jzg2zpkweldfsiru" alt="Dragon Logo"/>
-        <div>
-          <h1>Dragon Escrow Vault</h1>
-          <div class="subtitle">Compact, responsive — Monad</div>
-        </div>
+        <img class="logo" src="https://brown-left-viper-691.mypinata.cloud/ipfs/bafybeiarjogrmlafa7t4tzyukv633iy4lf7nxtyqm6jzg2zpkweldfsiru" alt="Dragon"/>
+        <div><h1>Dragon Escrow Vault</h1><div class="subtitle">Secure Escrow on Monad</div></div>
       </div>
-
       <div class="top-controls">
         <button id="themeToggle" class="btn ghost">Theme</button>
         <button id="refreshBtnTop" class="btn ghost">Refresh</button>
@@ -130,22 +30,17 @@
           <div class="wallet-row">
             <div class="wallet-left">
               <div class="indicator" id="indicator"></div>
-              <div>
-                <div class="small-muted">Wallet</div>
-                <div id="statusText" style="font-weight:800">NOT CONNECTED</div>
-              </div>
+              <div><div class="small-muted">Wallet</div><div id="statusText" style="font-weight:800">NOT CONNECTED</div></div>
             </div>
-
             <div style="display:flex;gap:8px;flex-wrap:wrap">
               <button class="btn small" id="metamaskBtn">🦊 MetaMask</button>
               <button class="btn small" id="web3authBtn">🔐 Web3Auth</button>
-              <button class="btn ghost small" id="disconnectBtn">⎋ Disconnect</button>
+              <button class="btn ghost small" id="disconnectBtn">Disconnect</button>
             </div>
           </div>
-
-          <div id="walletInfo" class="wallet-info" style="display:none; margin-top:12px">
-            <div>Address: <span id="userAddr" style="color:var(--text);font-weight:700">-</span>
-              <button class="copy-btn" id="copyUserBtn" title="Copy address">⧉</button>
+          <div id="walletInfo" style="display:none;margin-top:12px">
+            <div>Address: <span id="userAddr" style="color:var(--text);font-weight:700;cursor:pointer" title="Click to copy">-</span>
+              <button class="copy-btn" id="copyUserBtn" title="Copy">⧉</button>
             </div>
             <div>Balance: <span id="userBal" style="color:var(--text);font-weight:700">-</span></div>
             <div id="adminBadge" style="margin-top:8px"></div>
@@ -154,87 +49,55 @@
 
         <div class="panel compact" style="margin-top:12px">
           <div class="panel-header">
-            <div>
-              <strong>Create Escrow</strong>
-              <div class="small-muted">createEscrow(seller, arbiter, description) + value</div>
-            </div>
-            <div class="small-muted">Payable</div>
+            <div><strong>Create Escrow</strong><div class="small-muted">Lock funds until delivery</div></div>
           </div>
-
           <div style="margin-top:8px">
-            <div style="margin-bottom:10px"><input id="sellerAddr" placeholder="Seller address (0x...)" /></div>
-            <div style="margin-bottom:10px"><input id="arbiterAddr" placeholder="Arbiter address (optional)" /></div>
+            <div style="margin-bottom:10px"><input id="sellerAddr" placeholder="Seller address (0x...)"/></div>
+            <div style="margin-bottom:10px"><input id="arbiterAddr" placeholder="Arbiter address (optional)"/></div>
             <div style="display:flex;gap:8px;margin-bottom:10px">
-              <input id="amountMon" type="number" step="any" placeholder="Amount (MON)" />
-              <div style="min-width:180px">
-                <div class="small-muted">Fee preview</div>
-                <div id="feePreview" style="font-weight:800">—</div>
-              </div>
+              <input id="amountMon" type="number" step="any" placeholder="Amount (MON)"/>
+              <div style="min-width:180px"><div class="small-muted">Fee preview</div><div id="feePreview" style="font-weight:800;font-size:0.85rem">—</div></div>
             </div>
             <div style="margin-bottom:10px"><textarea id="escrowDesc" placeholder="Description"></textarea></div>
             <div style="display:flex;gap:8px;flex-wrap:wrap">
               <button class="btn" id="createBtn">➕ Create & Pay</button>
-              <button class="btn ghost" id="refreshMyEscrows">🔄 Refresh My Escrows</button>
+              <button class="btn ghost" id="refreshMyEscrows">🔄 Refresh</button>
             </div>
           </div>
         </div>
 
         <div class="panel compact" style="margin-top:12px">
-          <div class="panel-header" style="align-items:center">
-            <div>
-              <strong>My Escrows</strong>
-              <div class="small-muted">getUserEscrows → getEscrow</div>
-            </div>
-            <div class="small-muted">Actions</div>
-          </div>
-
-          <div id="escrowList" class="escrow-list" aria-live="polite">
-            <div class="muted">Connect wallet to show escrows</div>
-          </div>
+          <div class="panel-header"><div><strong>My Escrows</strong><div class="small-muted">Manage active escrows</div></div></div>
+          <div id="escrowList" class="escrow-list"><div class="muted">Connect wallet to show escrows</div></div>
         </div>
       </main>
 
       <aside>
         <div class="panel compact">
           <div class="panel-header">
-            <div>
-              <strong>LIVE LCD</strong>
-              <div class="small-muted">Contract snapshot</div>
-            </div>
+            <div><strong>Contract Status</strong><div class="small-muted">Live data</div></div>
             <div class="small-muted" id="networkBadge">Chain: ?</div>
           </div>
-
           <div class="lcd-grid">
             <div class="lcd-stat"><div class="lcd-label">Platform Fee</div><div class="lcd-value" id="fee">...</div></div>
             <div class="lcd-stat"><div class="lcd-label">Total Fees</div><div class="lcd-value" id="total">...</div></div>
-            <div class="lcd-stat"><div class="lcd-label">Fee Collector</div><div class="lcd-value" id="collector">...</div>
-              <button class="copy-btn" id="copyCollectorBtn" title="Copy collector">⧉</button>
-            </div>
+            <div class="lcd-stat"><div class="lcd-label">Fee Collector</div><div class="lcd-value" id="collector" style="cursor:pointer" title="Click to copy">...</div><button class="copy-btn" id="copyCollectorBtn">⧉</button></div>
             <div class="lcd-stat"><div class="lcd-label">Status</div><div class="lcd-value" id="status">...</div></div>
-            <div class="lcd-stat"><div class="lcd-label">Owner</div><div class="lcd-value" id="owner">...</div>
-              <button class="copy-btn" id="copyOwnerBtn" title="Copy owner">⧉</button>
-            </div>
+            <div class="lcd-stat"><div class="lcd-label">Owner</div><div class="lcd-value" id="owner" style="cursor:pointer" title="Click to copy">...</div><button class="copy-btn" id="copyOwnerBtn">⧉</button></div>
             <div class="lcd-stat"><div class="lcd-label">Escrows</div><div class="lcd-value" id="count">...</div></div>
             <div class="lcd-stat"><div class="lcd-label">Block</div><div class="lcd-value" id="block">...</div></div>
             <div class="lcd-stat"><div class="lcd-label">Gas</div><div class="lcd-value" id="gasPrice">...</div></div>
           </div>
         </div>
 
-        <div class="panel compact admin-panel" id="adminPanel" style="margin-top:12px; display:none">
-          <div class="panel-header">
-            <div>
-              <strong>Admin</strong>
-              <div class="small-muted">Owner controls</div>
-            </div>
-            <div class="small-muted">⚠️</div>
-          </div>
-
+        <div class="panel compact" id="adminPanel" style="margin-top:12px;display:none">
+          <div class="panel-header"><div><strong>Admin</strong><div class="small-muted">Owner controls</div></div></div>
           <div style="margin-top:8px">
-            <div style="display:flex;gap:8px;margin-bottom:10px"><input id="newFeePercent" placeholder="New fee % (e.g. 2.5)"/><button class="btn small" id="updateFeeBtn">Set</button></div>
-            <div style="display:flex;gap:8px;margin-bottom:10px"><input id="newCollector" placeholder="New fee collector"/><button class="btn small" id="updateCollectorBtn">Set</button></div>
-            <div style="display:flex;gap:8px;margin-bottom:10px"><button class="btn small" id="pauseBtn">Pause</button><button class="btn small" id="unpauseBtn">Unpause</button></div>
-            <div style="margin-top:8px" class="small-muted">Danger</div>
-            <div style="display:flex;gap:8px;margin-top:8px"><button class="btn small" id="emergencyWithdrawBtn" style="background:linear-gradient(90deg,#ff6b6b,#ff4444)">Emergency Withdraw</button></div>
+            <div style="display:flex;gap:8px;margin-bottom:10px"><input id="newFeePercent" placeholder="New fee % (e.g. 2.5)"/><button class="btn small" id="updateFeeBtn">Set Fee</button></div>
+            <div style="display:flex;gap:8px;margin-bottom:10px"><input id="newCollector" placeholder="New collector"/><button class="btn small" id="updateCollectorBtn">Set Collector</button></div>
+            <div style="display:flex;gap:8px;margin-bottom:10px"><button class="btn small" id="pauseBtn">⏸ Pause</button><button class="btn small" id="unpauseBtn">▶ Unpause</button></div>
+            <div style="margin-top:8px" class="small-muted">⚠️ Danger Zone</div>
+            <div style="display:flex;gap:8px;margin-top:8px"><button class="btn small" id="emergencyWithdrawBtn" style="background:linear-gradient(90deg,#ff6b6b,#ff4444);color:white">Emergency Withdraw</button></div>
             <div style="display:flex;gap:8px;margin-top:10px"><input id="transferTo" placeholder="Transfer ownership to"/><button class="btn small" id="transferOwnerBtn">Transfer</button></div>
             <div style="display:flex;gap:8px;margin-top:10px"><input id="upgradeImpl" placeholder="New implementation"/><button class="btn small" id="upgradeBtn">Upgrade</button></div>
           </div>
@@ -242,20 +105,14 @@
       </aside>
     </div>
 
-    <footer>Dragon Escrow Vault — compact responsive dashboard · Monad</footer>
-
-    <!-- Notifications container (populated dynamically) -->
-    <div id="notification-container" aria-live="polite"></div>
-
-    <!-- pending tx bar -->
-    <div id="pendingBar" style="display:none" class="pending-bar" role="status" aria-live="assertive">
-      <div class="spinner" id="pendingSpinner"></div>
+    <footer>Dragon Escrow Vault — Secure, Transparent, Decentralized</footer>
+    <div id="notification-container"></div>
+    <div id="pendingBar" style="display:none" class="pending-bar">
+      <div class="spinner"></div>
       <div id="pendingText" style="font-weight:700">Pending transaction</div>
-      <a id="pendingLink" href="#" target="_blank" rel="noopener noreferrer" style="color:var(--accent-cyan); font-weight:800; margin-left:8px">View</a>
-      <button id="pendingClose" class="copy-btn" title="Dismiss" style="margin-left:8px">✕</button>
+      <a id="pendingLink" href="#" target="_blank" rel="noopener" style="color:var(--accent-cyan);font-weight:800;margin-left:8px">View</a>
+      <button id="pendingClose" class="copy-btn" style="margin-left:8px">✕</button>
     </div>
-
-    <div id="msg" style="margin-top:6px"></div>
   </div>
 
   <script>
