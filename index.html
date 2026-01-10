@@ -3,20 +3,20 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Hacker Escrow Vault - Monad Dashboard</title>
+  <title>Dragon Escrow Vault - Monad</title>
   <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/web3/1.10.0/web3.min.js"></script>
+  <!-- UMD included; loader will still validate constructor at runtime -->
   <script src="https://cdn.jsdelivr.net/npm/@web3auth/modal@8.0.0/dist/modal.umd.min.js"></script>
 
   <style>
-    /* Palette: black / white / green - simplified and responsive */
     :root{
-      --bg: #000000;            /* black background */
-      --panel-bg: #0a0a0a;      /* slightly off-black for panels */
-      --muted: #bfbfbf;         /* light gray for labels */
-      --text: #ffffff;          /* primary white text */
-      --accent: #00e07a;        /* neon green accent */
-      --accent-2: #00b36a;      /* darker green for depth */
+      --bg: #000000;
+      --panel-bg: #0a0a0a;
+      --muted: #bfbfbf;
+      --text: #ffffff;
+      --accent: #00e07a;
+      --accent-2: #00b36a;
       --border: 1px solid #0f0f0f;
       --shadow: 0 8px 20px rgba(0,0,0,0.6);
       --radius: 12px;
@@ -24,7 +24,6 @@
       font-synthesis: none;
     }
 
-    /* Reset */
     * { box-sizing: border-box; margin: 0; padding: 0; }
     html,body { height: 100%; }
     body {
@@ -36,7 +35,6 @@
       line-height: 1.2;
     }
 
-    /* Container & header */
     .container {
       max-width: var(--max-w);
       width: 100%;
@@ -55,10 +53,14 @@
       margin-bottom: 6px;
     }
 
-    /* Panels */
-    .wallet, .lcd, .stats { background: linear-gradient(180deg, var(--panel-bg), #050505); border-radius: var(--radius); padding: 14px; box-shadow: var(--shadow); border: var(--border); }
+    .wallet, .lcd, .stats {
+      background: linear-gradient(180deg, var(--panel-bg), #050505);
+      border-radius: var(--radius);
+      padding: 14px;
+      box-shadow: var(--shadow);
+      border: var(--border);
+    }
 
-    /* Logo */
     .logo {
       display:block;
       width: 84px;
@@ -76,17 +78,40 @@
       margin-bottom: 8px;
     }
 
-    /* Rows and labels */
-    .row { display:flex; justify-content:space-between; align-items:center; padding:10px 8px; margin:8px 0; border-radius:10px; background: transparent; }
+    .row {
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      padding:10px 8px;
+      margin:8px 0;
+      border-radius:10px;
+      background: transparent;
+    }
     .label { color: var(--muted); font-size: 0.9rem; }
     .value { color: var(--text); font-weight: 800; font-size: 0.98rem; }
 
     .loading { color: var(--muted); }
 
-    /* Wallet area */
-    .wallet-status { display:flex; align-items:center; justify-content:center; gap:10px; margin-bottom:10px; font-weight:800; color:var(--muted); }
-    .indicator { width:12px; height:12px; border-radius:50%; background:#6b6b6b; box-shadow: 0 0 6px rgba(0,0,0,0.6); }
-    .indicator.on { background: var(--accent); box-shadow: 0 0 12px rgba(0,224,122,0.25); }
+    .wallet-status {
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:10px;
+      margin-bottom:10px;
+      font-weight:800;
+      color:var(--muted);
+    }
+    .indicator {
+      width:12px;
+      height:12px;
+      border-radius:50%;
+      background:#6b6b6b;
+      box-shadow: 0 0 6px rgba(0,0,0,0.6);
+    }
+    .indicator.on {
+      background: var(--accent);
+      box-shadow: 0 0 12px rgba(0,224,122,0.25);
+    }
 
     .wallet-btns { display:flex; gap:10px; flex-wrap:wrap; }
     .wallet-btn {
@@ -103,25 +128,59 @@
       cursor: pointer;
       transition: transform .12s ease, box-shadow .12s ease;
       font-weight:800;
+      min-width: 140px;
     }
-    .wallet-btn:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0,224,122,0.06); }
-    .wallet-btn.connected { background: var(--accent); color: #00110a; box-shadow: 0 12px 30px rgba(0,224,122,0.12); }
+    .wallet-btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 20px rgba(0,224,122,0.06);
+    }
+    .wallet-btn.connected {
+      background: var(--accent);
+      color: #00110a;
+      box-shadow: 0 12px 30px rgba(0,224,122,0.12);
+    }
 
-    .wallet-info { display:none; margin-top:10px; padding:10px; border-radius:10px; background: rgba(255,255,255,0.02); }
+    .wallet-info {
+      display:none;
+      margin-top:10px;
+      padding:10px;
+      border-radius:10px;
+      background: rgba(255,255,255,0.02);
+    }
     .wallet-info.show { display:block; }
 
-    /* Stats grid */
-    .stats { display:grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap:10px; }
-    .stat { padding:12px; border-radius:10px; background: transparent; border: 1px solid rgba(255,255,255,0.03); }
+    .stats {
+      display:grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap:10px;
+    }
+    .stat {
+      padding:12px;
+      border-radius:10px;
+      background: transparent;
+      border: 1px solid rgba(255,255,255,0.03);
+    }
     .stat-label { color: var(--muted); font-size:0.85rem; margin-bottom:6px; }
     .stat-value { color: var(--text); font-weight:900; font-size:1.1rem; word-break:break-all; }
 
-    /* Buttons */
-    .btn { padding:10px 16px; border-radius:10px; border: none; background: linear-gradient(90deg,var(--accent),var(--accent-2)); color: #00110a; font-weight:900; cursor:pointer; }
-    .btn.ghost { background: transparent; color: var(--muted); border: 1px solid rgba(255,255,255,0.04); box-shadow:none; }
+    .btn {
+      padding:10px 16px;
+      border-radius:10px;
+      border: none;
+      background: linear-gradient(90deg,var(--accent),var(--accent-2));
+      color: #00110a;
+      font-weight:900;
+      cursor:pointer;
+      font-family: inherit;
+    }
+    .btn.ghost {
+      background: transparent;
+      color: var(--muted);
+      border: 1px solid rgba(255,255,255,0.04);
+      box-shadow:none;
+    }
     .btn.small { padding:8px 10px; font-size:0.9rem; }
 
-    /* Small adjustments for mobile */
     @media (max-width: 900px) {
       .container { padding: 10px; gap:10px; }
       h1 { font-size: 1.3rem; }
@@ -154,18 +213,18 @@
       </div>
 
       <div class="wallet-btns" style="margin-bottom:10px;">
-        <button id="metamaskBtn" class="wallet-btn">
+        <button id="metamaskBtn" class="wallet-btn" type="button" aria-label="Connect with MetaMask">
           <div style="font-size:1.4rem;">🦊</div>
           <div>MetaMask</div>
         </button>
 
-        <button id="web3authBtn" class="wallet-btn">
+        <button id="web3authBtn" class="wallet-btn" type="button" aria-label="Connect with Web3Auth">
           <div style="font-size:1.4rem;">🔐</div>
           <div>Web3Auth</div>
         </button>
       </div>
 
-      <div id="walletInfo" class="wallet-info">
+      <div id="walletInfo" class="wallet-info" aria-live="polite">
         <div style="display:flex;justify-content:space-between;margin-bottom:8px">
           <div class="label">Address</div><div id="userAddr" class="value">-</div>
         </div>
@@ -182,7 +241,7 @@
       </div>
     </div>
 
-    <div class="lcd">
+    <div class="lcd" aria-live="polite">
       <div class="title">LIVE LCD DASHBOARD</div>
 
       <div class="row"><div class="label">Platform Fee</div><div id="fee" class="value loading">...</div></div>
@@ -193,7 +252,7 @@
       <div class="row"><div class="label">Escrows</div><div id="count" class="value loading">...</div></div>
 
       <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
-        <button id="refreshBtn" class="btn small">🔄 Refresh</button>
+        <button id="refreshBtn" class="btn small" type="button">🔄 Refresh</button>
         <div style="flex:1"></div>
         <div style="color:var(--muted);font-size:0.9rem;align-self:center">Auto-refresh every 15s</div>
       </div>
@@ -202,141 +261,81 @@
     <div class="stats" aria-hidden="false">
       <div class="stat"><div class="stat-label">Network</div><div id="networkName" class="stat-value">Monad</div></div>
       <div class="stat"><div class="stat-label">Chain ID</div><div id="chainId" class="stat-value">143</div></div>
-      <div class="stat"><div class="stat-label">RPC Status</div><div id="rpcStatus" class="stat-value">⏳</div></div>
+      <div class="stat"><div class="stat-label">RPC Status</div><div id="rpcStatus" class="stat-value">✅</div></div>
       <div class="stat"><div class="stat-label">Block Height</div><div id="block" class="stat-value loading">...</div></div>
       <div class="stat"><div class="stat-label">Gas Price</div><div id="gasPrice" class="stat-value loading">...</div></div>
       <div class="stat"><div class="stat-label">Last Update</div><div id="lastUpdate" class="stat-value">Just now</div></div>
     </div>
 
-    <div id="msg" style="min-height:28px"></div>
+    <div id="msg" style="min-height:28px" aria-live="polite"></div>
   </div>
 
   <script>
-    // keep your JS as before but referencing the new simplified variable names
     const CONFIG = {
       addr: "0x49d88eB97341108d9C6868d65a6512a4af3d183b",
       rpc: "https://rpc.monad.xyz",
       chainId: "0x8F",
       chainIdDec: 143,
-      web3auth: { clientId: "BNCSx81g7Ukojfyp47J0kQVSUiEuqRe_6iFBMusUyziWdbwdXDceON7f3WlwQ04h7DvvX1jAFhkocwg-PZ_yWqE", network: "mainnet" }
+      web3auth: {
+        clientId: "BNCSx81g7Ukojfyp47J0kQVSUiEuqRe_6iFBMusUyziWdbwdXDceON7f3WlwQ04h7DvvX1jAFhkocwg-PZ_yWqE",
+        network: "mainnet"
+      }
     };
 
-    const ABI = /* ABI omitted here for brevity; use same corrected ABI as in your original file */ [
-      {"inputs":[],"stateMutability":"nonpayable","type":"constructor"},
-      {"inputs":[],"name":"FeePercentTooHigh","type":"error"},
-      {"inputs":[],"name":"InvalidAddress","type":"error"},
-      {"inputs":[],"name":"InvalidAmount","type":"error"},
-      {"inputs":[],"name":"InvalidEscrowId","type":"error"},
-      {"inputs":[],"name":"InvalidState","type":"error"},
-      {"inputs":[],"name":"TransferFailed","type":"error"},
-      {"inputs":[],"name":"UnauthorizedAccess","type":"error"},
-      {"anonymous":false,"inputs":[{"indexed":false,"internalType":"address","name":"previousAdmin","type":"address"},{"indexed":false,"internalType":"address","name":"newAdmin","type":"address"}],"name":"AdminChanged","type":"event"},
-      {"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"beacon","type":"address"}],"name":"BeaconUpgraded","type":"event"},
-      {"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"escrowId","type":"uint256"}],"name":"DeliveryConfirmed","type":"event"},
-      {"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"escrowId","type":"uint256"}],"name":"DisputeRaised","type":"event"},
-      {"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"escrowId","type":"uint256"},{"indexed":true,"internalType":"address","name":"winner","type":"address"}],"name":"DisputeResolved","type":"event"},
-      {"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"escrowId","type":"uint256"},{"indexed":true,"internalType":"address","name":"buyer","type":"address"},{"indexed":true,"internalType":"address","name":"seller","type":"address"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"}],"name":"EscrowCreated","type":"event"},
-      {"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"escrowId","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"feeAmount","type":"uint256"}],"name":"FeeCollected","type":"event"},
-      {"anonymous":false,"inputs":[{"indexed":false,"internalType":"address","name":"oldCollector","type":"address"},{"indexed":false,"internalType":"address","name":"newCollector","type":"address"}],"name":"FeeCollectorUpdated","type":"event"},
-      {"anonymous":false,"inputs":[{"indexed":false,"internalType":"uint256","name":"oldPercent","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"newPercent","type":"uint256"}],"name":"FeePercentUpdated","type":"event"},
-      {"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"escrowId","type":"uint256"},{"indexed":true,"internalType":"address","name":"recipient","type":"address"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"}],"name":"FundsReleased","type":"event"},
-      {"anonymous":false,"inputs":[{"indexed":false,"internalType":"uint8","name":"version","type":"uint8"}],"name":"Initialized","type":"event"},
-      {"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"previousOwner","type":"address"},{"indexed":true,"internalType":"address","name":"newOwner","type":"address"}],"name":"OwnershipTransferred","type":"event"},
-      {"anonymous":false,"inputs":[{"indexed":false,"internalType":"address","name":"account","type":"address"}],"name":"Paused","type":"event"},
-      {"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"escrowId","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"}],"name":"PaymentDeposited","type":"event"},
-      {"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"escrowId","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"}],"name":"Refunded","type":"event"},
-      {"anonymous":false,"inputs":[{"indexed":false,"internalType":"address","name":"account","type":"address"}],"name":"Unpaused","type":"event"},
-      {"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"implementation","type":"address"}],"name":"Upgraded","type":"event"},
-      {"inputs":[{"internalType":"uint256","name":"_escrowId","type":"uint256"}],"name":"approveRefund","outputs":[],"stateMutability":"nonpayable","type":"function"},
-      {"inputs":[{"internalType":"uint256","name":"_amount","type":"uint256"}],"name":"calculateFee","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
-      {"inputs":[{"internalType":"uint256","name":"_escrowId","type":"uint256"}],"name":"confirmDelivery","outputs":[],"stateMutability":"nonpayable","type":"function"},
-      {"inputs":[{"internalType":"address payable","name":"_seller","type":"address"},{"internalType":"address","name":"_arbiter","type":"address"},{"internalType":"string","name":"_description","type":"string"}],"name":"createEscrow","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"payable","type":"function"},
-      {"inputs":[],"name":"emergencyWithdraw","outputs":[],"stateMutability":"nonpayable","type":"function"},
-      {"inputs":[],"name":"escrowCount","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
-      {"inputs":[{"internalType":"uint256","name":"","type":"uint256"}],"name":"escrows","outputs":[{"internalType":"address payable","name":"buyer","type":"address"},{"internalType":"address payable","name":"seller","type":"address"},{"internalType":"address","name":"arbiter","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"},{"internalType":"enum DragonEscrowVault.State","name":"state","type":"uint8"},{"internalType":"uint256","name":"createdAt","type":"uint256"},{"internalType":"string","name":"description","type":"string"}],"stateMutability":"view","type":"function"},
-      {"inputs":[],"name":"feeCollector","outputs":[{"internalType":"address payable","name":"","type":"address"}],"stateMutability":"view","type":"function"},
-      {"inputs":[],"name":"feePercent","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
-      {"inputs":[{"internalType":"uint256","name":"_escrowId","type":"uint256"}],"name":"getEscrow","outputs":[{"internalType":"address","name":"buyer","type":"address"},{"internalType":"address","name":"seller","type":"address"},{"internalType":"address","name":"arbiter","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"},{"internalType":"enum DragonEscrowVault.State","name":"state","type":"uint8"},{"internalType":"uint256","name":"createdAt","type":"uint256"},{"internalType":"string","name":"description","type":"string"}],"stateMutability":"view","type":"function"},
-      {"inputs":[{"internalType":"address","name":"_user","type":"address"}],"name":"getUserEscrows","outputs":[{"internalType":"uint256[]","name":"","type":"uint256[]"}],"stateMutability":"view","type":"function"},
-      {"inputs":[{"internalType":"address payable","name":"_feeCollector","type":"address"},{"internalType":"uint256","name":"_feePercent","type":"uint256"}],"name":"initialize","outputs":[],"stateMutability":"nonpayable","type":"function"},
-      {"inputs":[],"name":"owner","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},
-      {"inputs":[],"name":"pause","outputs":[],"stateMutability":"nonpayable","type":"function"},
-      {"inputs":[],"name":"paused","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},
-      {"inputs":[],"name":"proxiableUUID","outputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"stateMutability":"view","type":"function"},
-      {"inputs":[],"name":"renounceOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},
-      {"inputs":[{"internalType":"uint256","name":"_escrowId","type":"uint256"}],"name":"requestRefund","outputs":[],"stateMutability":"nonpayable","type":"function"},
-      {"inputs":[{"internalType":"uint256","name":"_escrowId","type":"uint256"},{"internalType":"bool","name":"_releaseToBuyer","type":"bool"}],"name":"resolveDispute","outputs":[],"stateMutability":"nonpayable","type":"function"},
-      {"inputs":[],"name":"totalFeesCollected","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
-      {"inputs":[{"internalType":"address","name":"newOwner","type":"address"}],"name":"transferOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},
-      {"inputs":[],"name":"unpause","outputs":[],"stateMutability":"nonpayable","type":"function"},
-      {"inputs":[{"internalType":"address payable","name":"_newCollector","type":"address"},{"internalType":"uint256","name":"_newFeePercent","type":"uint256"}],"name":"updateFeeCollector","outputs":[],"stateMutability":"nonpayable","type":"function"},
-      {"inputs":[{"internalType":"uint256","name":"_newFeePercent","type":"uint256"}],"name":"updateFeePercent","outputs":[],"stateMutability":"nonpayable","type":"function"},
-      {"inputs":[{"internalType":"address","name":"newImplementation","type":"address"}],"name":"upgradeTo","outputs":[],"stateMutability":"nonpayable","type":"function"},
-      {"inputs":[{"internalType":"address","name":"newImplementation","type":"address"},{"internalType":"bytes","name":"data","type":"bytes"}],"name":"upgradeToAndCall","outputs":[],"stateMutability":"payable","type":"function"},
-      {"stateMutability":"payable","type":"receive"}
-    ];
+    const ABI = /* same corrected ABI from your contract */ [{"inputs":[],"stateMutability":"nonpayable","type":"constructor"},{"inputs":[],"name":"FeePercentTooHigh","type":"error"},{"inputs":[],"name":"InvalidAddress","type":"error"},{"inputs":[],"name":"InvalidAmount","type":"error"},{"inputs":[],"name":"InvalidEscrowId","type":"error"},{"inputs":[],"name":"InvalidState","type":"error"},{"inputs":[],"name":"TransferFailed","type":"error"},{"inputs":[],"name":"UnauthorizedAccess","type":"error"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"address","name":"previousAdmin","type":"address"},{"indexed":false,"internalType":"address","name":"newAdmin","type":"address"}],"name":"AdminChanged","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"beacon","type":"address"}],"name":"BeaconUpgraded","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"escrowId","type":"uint256"}],"name":"DeliveryConfirmed","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"escrowId","type":"uint256"}],"name":"DisputeRaised","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"escrowId","type":"uint256"},{"indexed":true,"internalType":"address","name":"winner","type":"address"}],"name":"DisputeResolved","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"escrowId","type":"uint256"},{"indexed":true,"internalType":"address","name":"buyer","type":"address"},{"indexed":true,"internalType":"address","name":"seller","type":"address"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"}],"name":"EscrowCreated","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"escrowId","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"feeAmount","type":"uint256"}],"name":"FeeCollected","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"address","name":"oldCollector","type":"address"},{"indexed":false,"internalType":"address","name":"newCollector","type":"address"}],"name":"FeeCollectorUpdated","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"uint256","name":"oldPercent","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"newPercent","type":"uint256"}],"name":"FeePercentUpdated","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"escrowId","type":"uint256"},{"indexed":true,"internalType":"address","name":"recipient","type":"address"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"}],"name":"FundsReleased","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"uint8","name":"version","type":"uint8"}],"name":"Initialized","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"previousOwner","type":"address"},{"indexed":true,"internalType":"address","name":"newOwner","type":"address"}],"name":"OwnershipTransferred","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"address","name":"account","type":"address"}],"name":"Paused","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"escrowId","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"}],"name":"PaymentDeposited","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"escrowId","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"}],"name":"Refunded","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"address","name":"account","type":"address"}],"name":"Unpaused","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"implementation","type":"address"}],"name":"Upgraded","type":"event"},{"inputs":[{"internalType":"uint256","name":"_escrowId","type":"uint256"}],"name":"approveRefund","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"_amount","type":"uint256"}],"name":"calculateFee","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"_escrowId","type":"uint256"}],"name":"confirmDelivery","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address payable","name":"_seller","type":"address"},{"internalType":"address","name":"_arbiter","type":"address"},{"internalType":"string","name":"_description","type":"string"}],"name":"createEscrow","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"payable","type":"function"},{"inputs":[],"name":"emergencyWithdraw","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"escrowCount","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"","type":"uint256"}],"name":"escrows","outputs":[{"internalType":"address payable","name":"buyer","type":"address"},{"internalType":"address payable","name":"seller","type":"address"},{"internalType":"address","name":"arbiter","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"},{"internalType":"enum DragonEscrowVault.State","name":"state","type":"uint8"},{"internalType":"uint256","name":"createdAt","type":"uint256"},{"internalType":"string","name":"description","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"feeCollector","outputs":[{"internalType":"address payable","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"feePercent","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"_escrowId","type":"uint256"}],"name":"getEscrow","outputs":[{"internalType":"address","name":"buyer","type":"address"},{"internalType":"address","name":"seller","type":"address"},{"internalType":"address","name":"arbiter","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"},{"internalType":"enum DragonEscrowVault.State","name":"state","type":"uint8"},{"internalType":"uint256","name":"createdAt","type":"uint256"},{"internalType":"string","name":"description","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"_user","type":"address"}],"name":"getUserEscrows","outputs":[{"internalType":"uint256[]","name":"","type":"uint256[]"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address payable","name":"_feeCollector","type":"address"},{"internalType":"uint256","name":"_feePercent","type":"uint256"}],"name":"initialize","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"owner","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"pause","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"paused","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"proxiableUUID","outputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"renounceOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"_escrowId","type":"uint256"}],"name":"requestRefund","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"_escrowId","type":"uint256"},{"internalType":"bool","name":"_releaseToBuyer","type":"bool"}],"name":"resolveDispute","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"totalFeesCollected","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"newOwner","type":"address"}],"name":"transferOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"unpause","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address payable","name":"_newCollector","type":"address"},{"internalType":"uint256","name":"_newFeePercent","type":"uint256"}],"name":"updateFeeCollector","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"_newFeePercent","type":"uint256"}],"name":"updateFeePercent","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"newImplementation","type":"address"}],"name":"upgradeTo","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"newImplementation","type":"address"},{"internalType":"bytes","name":"data","type":"bytes"}],"name":"upgradeToAndCall","outputs":[],"stateMutability":"payable","type":"function"},{"stateMutability":"payable","type":"receive"}];
 
-    // GLOBALS
     let w3 = new Web3(CONFIG.rpc);
     let c = new w3.eth.Contract(ABI, CONFIG.addr);
     let userAddr = null;
     let web3auth = null;
 
-    // HELPERS
     function msg(text, type = 'info') {
       const el = document.getElementById('msg');
       el.innerHTML = `<div style="padding:8px;border-radius:8px;background:${type==='error'?'#2a0b0b':'#071a10'};color:${type==='error'?'#ffb3b3':'#bfffe0'};font-weight:800">${text}</div>`;
       if (type !== 'info') setTimeout(()=>el.innerHTML='',4000);
     }
     function short(a){ return a? `${a.slice(0,6)}...${a.slice(-4)}` : '-'; }
-    function setLoading(id, txt){ const el = document.getElementById(id); if(el){ el.textContent = txt; el.classList.remove('loading'); } }
-
-    async function callContractJSON(method, params = []) {
-      // simple eth_call wrapper via RPC (read-only)
-      const func = ABI.find(x => x.name === method);
-      if(!func) throw new Error('Method not in ABI: ' + method);
-      const data = w3.eth.abi.encodeFunctionCall(func, params);
-      const res = await fetch(CONFIG.rpc, {
-        method:'POST', headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({ jsonrpc:'2.0', id:1, method:'eth_call', params:[{ to: CONFIG.addr, data }, 'latest'] })
-      });
-      const j = await res.json();
-      return j.result;
+    function setLoading(id, txt){
+      const el = document.getElementById(id);
+      if(el){ el.textContent = txt; el.classList.remove('loading'); }
     }
 
-    // LCD update (simplified & robust)
     async function updateLCD(){
-      ['fee','total','collector','status','owner','count','block'].forEach(id => setLoading(id, '⏳'));
+      ['fee','total','collector','status','owner','count','block','gasPrice'].forEach(id => setLoading(id, '⏳'));
       try {
-        // block
         const blk = await w3.eth.getBlockNumber();
         setLoading('block', blk.toLocaleString());
-        // fee percent
+
+        const gasPrice = await w3.eth.getGasPrice();
+        setLoading('gasPrice', (Number(gasPrice)/1e9).toFixed(2) + ' Gwei');
+
         const feeBp = await c.methods.feePercent().call().catch(()=>null);
         setLoading('fee', feeBp !== null ? (Number(feeBp)/100).toFixed(2) + '%' : 'N/A');
-        // total fees
+
         const totalFees = await c.methods.totalFeesCollected().call().catch(()=>null);
         setLoading('total', totalFees ? parseFloat(w3.utils.fromWei(totalFees,'ether')).toFixed(4) + ' MON' : '0 MON');
-        // collector
+
         const coll = await c.methods.feeCollector().call().catch(()=>null);
         setLoading('collector', coll && coll !== '0x0000000000000000000000000000000000000000' ? short(coll) : '-');
-        // paused
+
         const paused = await c.methods.paused().call().catch(()=>false);
         setLoading('status', paused ? '⛔ PAUSED' : '✅ ACTIVE');
-        // owner
+
         const owner = await c.methods.owner().call().catch(()=>null);
         setLoading('owner', owner && owner !== '0x0000000000000000000000000000000000000000' ? short(owner) : '-');
-        // escrow count
+
         const count = await c.methods.escrowCount().call().catch(()=>0);
         setLoading('count', Number(count).toLocaleString());
+
         setLoading('lastUpdate', new Date().toLocaleTimeString());
+        setLoading('rpcStatus', '✅');
       } catch (err) {
-        ['fee','total','collector','status','owner','count','block'].forEach(id => setLoading(id, 'N/A'));
+        ['fee','total','collector','status','owner','count','block','gasPrice'].forEach(id => setLoading(id, 'N/A'));
+        setLoading('rpcStatus', '❌');
         msg('Failed to refresh LCD: ' + (err.message || err), 'error');
       }
     }
 
-    // WALLET & CONNECT
     function updateWalletUI(connected, via='') {
       const ind = document.getElementById('indicator');
       const st = document.getElementById('statusText');
@@ -360,7 +359,13 @@
         if(e.code === 4902){
           await window.ethereum.request({
             method:'wallet_addEthereumChain',
-            params:[{ chainId:CONFIG.chainId, chainName:'Monad Mainnet', nativeCurrency:{name:'Monad',symbol:'MON',decimals:18}, rpcUrls:[CONFIG.rpc], blockExplorerUrls:['https://monadvision.com'] }]
+            params:[{
+              chainId:CONFIG.chainId,
+              chainName:'Monad Mainnet',
+              nativeCurrency:{name:'Monad',symbol:'MON',decimals:18},
+              rpcUrls:[CONFIG.rpc],
+              blockExplorerUrls:['https://monadvision.com']
+            }]
           });
         } else throw e;
       }
@@ -380,23 +385,56 @@
         document.getElementById('userAddr').textContent = short(userAddr);
         document.getElementById('userBal').textContent = parseFloat(w3.utils.fromWei(bal,'ether')).toFixed(4) + ' MON';
         document.getElementById('userNet').textContent = 'Monad';
-        // admin badge
-        try { const owner = await c.methods.owner().call(); if(owner.toLowerCase() === userAddr.toLowerCase()) document.getElementById('adminBadge').innerHTML = '<div style="background:var(--accent);color:#00110a;padding:6px;border-radius:8px;font-weight:900;margin-top:8px;text-align:center">ADMIN</div>'; } catch {}
+        try {
+          const owner = await c.methods.owner().call();
+          if(owner.toLowerCase() === userAddr.toLowerCase())
+            document.getElementById('adminBadge').innerHTML = '<div style="background:var(--accent);color:#00110a;padding:6px;border-radius:8px;font-weight:900;margin-top:8px;text-align:center">ADMIN</div>';
+        } catch {}
         updateWalletUI(true,'MetaMask');
-        msg('MetaMask connected', 'success');
+        msg('MetaMask connected successfully!', 'info');
         window.ethereum.on('accountsChanged', a => { if(!a||a.length===0) disconnect(); else location.reload(); });
+        window.ethereum.on('chainChanged', () => location.reload());
       } catch(e){
+        console.error('MetaMask error:', e);
         msg('MetaMask error: ' + (e.message||e), 'error');
       }
     }
 
     async function connectWeb3Auth(){
       try {
-        if(!window.Web3auth){ msg('Web3Auth SDK not loaded', 'error'); return; }
+        // Detect possible constructor names exposed by the UMD
+        let Web3AuthConstructor = null;
+        if (typeof window.Web3Auth === 'function') Web3AuthConstructor = window.Web3Auth;
+        else if (window.Web3auth && typeof window.Web3auth.Web3Auth === 'function') Web3AuthConstructor = window.Web3auth.Web3Auth;
+        else if (window.Web3auth && typeof window.Web3auth.default === 'function') Web3AuthConstructor = window.Web3auth.default;
+
+        if (!Web3AuthConstructor) {
+          msg('Web3Auth SDK not available (constructor not found). Ensure the CDN loaded.', 'error');
+          console.warn('window keys:', Object.keys(window).filter(k => /web3auth|Web3Auth|Web3AuthModal|web3modal/i.test(k)));
+          return;
+        }
+
         msg('Initializing Web3Auth...', 'info');
-        web3auth = new window.Web3auth.Web3Auth({ clientId: CONFIG.web3auth.clientId, web3AuthNetwork: CONFIG.web3auth.network, chainConfig:{ chainNamespace:'eip155', chainId:CONFIG.chainId, rpcTarget:CONFIG.rpc } });
-        await web3auth.initModal();
+        web3auth = new Web3AuthConstructor({
+          clientId: CONFIG.web3auth.clientId,
+          web3AuthNetwork: CONFIG.web3auth.network,
+          chainConfig: {
+            chainNamespace: 'eip155',
+            chainId: CONFIG.chainId,
+            rpcTarget: CONFIG.rpc,
+            displayName: 'Monad Mainnet',
+            blockExplorer: 'https://monadvision.com',
+            ticker: 'MON',
+            tickerName: 'Monad'
+          }
+        });
+
+        if (typeof web3auth.initModal === 'function') {
+          await web3auth.initModal();
+        }
+
         const provider = await web3auth.connect();
+        if (!provider) throw new Error('No provider returned by Web3Auth');
         w3 = new Web3(provider);
         c = new w3.eth.Contract(ABI, CONFIG.addr);
         const accs = await w3.eth.getAccounts();
@@ -405,10 +443,17 @@
         document.getElementById('userAddr').textContent = short(userAddr);
         document.getElementById('userBal').textContent = parseFloat(w3.utils.fromWei(bal,'ether')).toFixed(4) + ' MON';
         document.getElementById('userNet').textContent = 'Monad';
-        try { const owner = await c.methods.owner().call(); if(owner.toLowerCase() === userAddr.toLowerCase()) document.getElementById('adminBadge').innerHTML = '<div style="background:var(--accent);color:#00110a;padding:6px;border-radius:8px;font-weight:900;margin-top:8px;text-align:center">ADMIN</div>'; } catch {}
+        try {
+          const owner = await c.methods.owner().call();
+          if(owner.toLowerCase() === userAddr.toLowerCase())
+            document.getElementById('adminBadge').innerHTML = '<div style="background:var(--accent);color:#00110a;padding:6px;border-radius:8px;font-weight:900;margin-top:8px;text-align:center">ADMIN</div>';
+        } catch {}
         updateWalletUI(true,'Web3Auth');
-        msg('Web3Auth connected', 'success');
-      } catch(e){ msg('Web3Auth error: ' + (e.message||e), 'error'); }
+        msg('Web3Auth connected', 'info');
+      } catch (e) {
+        console.error('Web3Auth error:', e);
+        msg('Web3Auth error: ' + (e.message || e), 'error');
+      }
     }
 
     function disconnect(){
@@ -422,13 +467,11 @@
       msg('Disconnected', 'info');
     }
 
-    // Bindings
     document.getElementById('metamaskBtn').onclick = connectMetaMask;
     document.getElementById('web3authBtn').onclick = connectWeb3Auth;
     document.getElementById('disconnectBtn').onclick = disconnect;
     document.getElementById('refreshBtn').onclick = updateLCD;
 
-    // Init
     window.addEventListener('DOMContentLoaded', () => {
       updateWalletUI(false);
       updateLCD();
